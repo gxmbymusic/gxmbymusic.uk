@@ -1,0 +1,170 @@
+/* OpenSauceSans Font Family */
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansRegular/OpenSauceSansRegular.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansRegular/OpenSauceSansRegular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansMedium/OpenSauceSansMedium.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansMedium/OpenSauceSansMedium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansBold/OpenSauceSansBold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansExtraBold/OpenSauceSansExtraBold.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansExtraBold/OpenSauceSansExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansBlack/OpenSauceSansBlack.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --particle-color: #000000;
+    --line-color: rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    position: fixed;
+}
+
+body {
+    background-color: var(--bg-color);
+    transition: background-color 0.6s ease;
+}
+
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.content-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 0 1rem;
+}
+
+.text-container {
+    position: relative;
+    width: 100%;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+    font-size: clamp(3rem, 28vw, 25rem);
+    color: var(--text-color);
+    line-height: 0.85;
+    text-align: center;
+    font-weight: 900;
+    user-select: none;
+    text-transform: uppercase;
+    cursor: default;
+    transition: all 0.3s ease;
+    transform-origin: center center;
+}
+
+#mainText {
+    position: relative;
+    z-index: 10;
+    letter-spacing: -0.2em;
+    will-change: transform, opacity, filter;
+    transform-origin: center center;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+/* Ghost text layers */
+.ghost-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+    font-size: clamp(3rem, 28vw, 25rem);
+    font-weight: 900;
+    letter-spacing: -0.2em;
+    line-height: 0.85;
+    text-align: center;
+    text-transform: uppercase;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+}
+
+/* Social Links */
+.social-links {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2rem;
+    z-index: 20;
+}
+
+.social-links a {
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    font-weight: 900;
+    color: var(--text-color);
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    text-transform: uppercase;
+}
+
+.social-links a:hover {
+    opacity: 1;
+}
+
+@media (min-width: 768px) {
+    .text-container {
+        max-width: 80vw;
+    }
+}

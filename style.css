@@ -1,0 +1,469 @@
+/* OpenSauceSans Font Family */
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansRegular/OpenSauceSansRegular.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansRegular/OpenSauceSansRegular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansMedium/OpenSauceSansMedium.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansMedium/OpenSauceSansMedium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansBold/OpenSauceSansBold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansExtraBold/OpenSauceSansExtraBold.woff2') format('woff2'),
+         url('fonts/OpenSauceSans/OpenSauceSansExtraBold/OpenSauceSansExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSauceSans';
+    src: url('fonts/OpenSauceSans/OpenSauceSansBlack/OpenSauceSansBlack.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --text-secondary: rgba(0, 0, 0, 0.8);
+    --particle-color: #000000;
+    --line-color: rgba(0, 0, 0, 0.3);
+}
+#mainText {
+    position: relative;
+    z-index: 10;
+    letter-spacing: -0.2em;
+    padding-top: 20%;
+    transition: letter-spacing 0.1s ease-out;
+    will-change: transform, opacity, filter;
+    transform-origin: center center;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    position: fixed;
+}
+
+body {
+    background-color: var(--bg-color);
+    transition: background-color 0.6s ease;
+}
+
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.content-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 0 1rem;
+}
+
+.text-container {
+    position: relative;
+    width: 100%;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+    font-size: clamp(3rem, 28vw, 25rem);
+    color: var(--text-color);
+    line-height: 0.85;
+    text-align: center;
+    font-weight: 900;
+    user-select: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform-origin: center center;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    position: relative;
+    z-index: 15;
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-buffer {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 0%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: width 0.1s linear;
+    z-index: 1;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #000000;
+    width: 0%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: width 0.1s linear;
+    z-index: 2;
+}
+
+.time-display {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+#elapsedTime,
+#totalTime {
+    font-weight: 400;
+    letter-spacing: 0.05em;
+}
+
+/* Music Player Styles */
+.music-player {
+    margin-top: 2rem;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+/* Player Controls Wrapper */
+.player-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
+    width: auto;
+}
+
+/* Player Controls */
+.player-controls {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Play/Pause Button Styles */
+.play-btn,
+.pause-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-color);
+    opacity: 0.3;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-btn.active,
+.pause-btn.active {
+    opacity: 1;
+}
+
+.play-btn:hover,
+.pause-btn:hover {
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+
+.play-btn.active:hover,
+.pause-btn.active:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.play-btn:active,
+.pause-btn:active {
+    transform: scale(0.9);
+}
+
+/* Play/Pause Icons */
+.play-icon,
+.pause-icon {
+    width: 48px;
+    height: 48px;
+    pointer-events: none;
+}
+
+/* Order Toggle Button */
+
+.order-toggle-label {
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.order-toggle {
+    background: none;
+    border: 2px solid var(--text-color);
+    padding: 0.5rem 1.5rem;
+    padding-right: 2.3rem;
+    cursor: pointer;
+    color: var(--text-color);
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.order-toggle:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.order-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Audio Metadata Container */
+.audio-metadata {
+    width: 100%;
+    height: 300px;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-color);
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1.5;
+    opacity: 0.6;
+    overflow: auto;
+    transition: all 0.3s ease;
+    position: relative;
+    display: block;
+    white-space: pre-wrap;
+}
+
+.audio-metadata:hover {
+    opacity: 0.8;
+}
+
+.audio-metadata a {
+    color: var(--text-color);
+    text-decoration: underline;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.audio-metadata a:hover {
+    opacity: 0.7;
+}
+
+/* Track List Container */
+.track-list-container {
+    width: 100%;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    position: relative;
+    border-radius: 8px;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 20%, transparent 60%);
+    mask-image: linear-gradient(to bottom, black 0%, black 20%, transparent 80%);
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.track-list-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Track List */
+.track-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    padding-bottom: 40vh;
+}
+
+.track-list li {
+    padding: 0.2rem 1rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease, color 0.3s ease;
+    color: var(--text-secondary);
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.5rem, 4vw, 1.7rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    text-align: right;
+    background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+    opacity: 0.4;
+    will-change: opacity;
+}
+
+.track-list li .track-name {
+    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+    display: inline-block;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    filter: blur(8px);
+}
+
+/* Remove blur for available tracks */
+.track-list li:not(.unavailable) .track-name {
+    filter: blur(0);
+}
+
+.track-list li .track-number {
+    display: inline;
+    font-size: 1rem;
+    margin-left: clamp(0.5rem, 2vw, 1rem);
+    font-style: italic;
+    transition: all 0.3s ease;
+}
+
+.track-list li .track-word {
+    display: inline;
+    transition: opacity 0.3s ease;
+}
+
+.track-list li:last-child {
+    border-bottom: none;
+}
+
+.track-list li:hover {
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.track-list li:hover .track-name {
+    letter-spacing: normal;
+    color: #000000;
+    /* filter: blur(0); Removed to keep blurred on hover */
+}
+
+.track-list li:hover .track-word {
+    opacity: 1 !important;
+}
+
+.track-list li.active {
+    color: var(--text-color);
+    opacity: 1;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--bg-color); /* Ensure it's not transparent */
+
+}
+
+/* Unavailable tracks (unreleased) */
+.track-list li.unavailable {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+.track-list li.unavailable:hover {
+    opacity: 0.3;
+    color: var(--text-secondary);
+}
+
+.track-list li.unavailable:hover .track-name {
+    filter: blur(8px);
+    letter-spacing: normal;
+    color: var(--text-secondary);
+}
+
+/* Audio Element (hidden) */
+#audioPlayer {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .text-container {
+        max-width: 80vw;
+    }
+    
+    .music-player {
+        gap: 3rem;
+    }
+    
+    .play-icon,
+    .pause-icon {
+        width: 56px;
+        height: 56px;
+    }
+}

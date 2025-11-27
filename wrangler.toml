@@ -1,0 +1,14 @@
+name = "gxmby365-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# R2 bucket binding
+[[r2_buckets]]
+binding = "GXMBY365"
+bucket_name = "gxmby365"
+
+# Routes
+routes = [
+  { pattern = "gxmbymusic.uk/tracks.json", zone_name = "gxmbymusic.uk" },
+  { pattern = "gxmbymusic.uk/audio/*", zone_name = "gxmbymusic.uk" }
+]
