@@ -9,12 +9,16 @@
 </head>
 <body>
     <canvas id="particleCanvas"></canvas>
+    <audio id="audioPlayer" preload="auto" hidden>
+        <source src="audio/Expressions.wav" type="audio/wav">
+    </audio>
     <div class="content-wrapper">
         <div class="text-container">
             <div class="video-embed">
                 <iframe
+                    id="heroVideo"
                     class="video-frame"
-                    src="https://www.youtube.com/embed/dd2-Gkox3f0?si=yu1KzkaiGW9FZUyX"
+                    src="https://www.youtube.com/embed/dd2-Gkox3f0?enablejsapi=1&playsinline=1&rel=0&si=yu1KzkaiGW9FZUyX"
                     title="YouTube video player"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerpolicy="strict-origin-when-cross-origin"
@@ -32,6 +36,7 @@
     </div>
     
     <script src="particles.js"></script>
-    <script src="auto-animate.js"></script>
+    <script src="audio-reactive.js"></script>
+    <script src="video-player.js"></script>
 </body>
 </html>
