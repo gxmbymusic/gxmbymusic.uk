@@ -94,15 +94,6 @@ body {
     min-height: min(72vw, 34rem);
 }
 
-.hero-wordmark {
-    grid-area: 1 / 1;
-    position: relative;
-    display: grid;
-    place-items: center;
-    z-index: 35;
-    transition: transform 0.35s ease, opacity 0.35s ease;
-}
-
 h1 {
     grid-area: 1 / 1;
     font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
@@ -122,19 +113,14 @@ h1 {
 #mainText {
     position: relative;
     z-index: 10;
-    top: 0;
     letter-spacing: -0.2em;
     will-change: transform, opacity, filter;
     transform-origin: center center;
     text-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-body.video-active .hero-wordmark {
-    transform: translateY(clamp(4rem, 12vw, 9rem)) scale(0.82);
-}
-
 body.video-active #mainText {
-    opacity: 0.04 !important;
+    opacity: 0.2 !important;
 }
 
 .video-embed {
@@ -166,9 +152,10 @@ body.video-active #mainText {
 
 /* Ghost text layers */
 .ghost-text {
-    grid-area: 1 / 1;
-    position: relative;
-    z-index: 36;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
     font-size: clamp(3rem, 28vw, 25rem);
     font-weight: 900;
@@ -181,10 +168,6 @@ body.video-active #mainText {
     pointer-events: none;
     user-select: none;
     will-change: transform, opacity;
-}
-
-body.video-active .ghost-text {
-    opacity: 0.18;
 }
 
 /* Social Links */
@@ -213,25 +196,6 @@ body.video-active .ghost-text {
     opacity: 1;
 }
 
-.debug-panel {
-    position: fixed;
-    right: 1rem;
-    bottom: 1rem;
-    z-index: 60;
-    min-width: 14rem;
-    max-width: min(24rem, calc(100vw - 2rem));
-    padding: 0.65rem 0.8rem;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    font-family: 'OpenSauceSans', sans-serif;
-    font-size: 0.72rem;
-    line-height: 1.45;
-    color: #000000;
-    white-space: pre-line;
-    pointer-events: none;
-}
-
 @media (min-width: 768px) {
     .text-container {
         max-width: 80vw;
@@ -254,12 +218,5 @@ body.video-active .ghost-text {
 
     .social-links {
         gap: 1rem;
-    }
-
-    .debug-panel {
-        right: 0.75rem;
-        bottom: 0.75rem;
-        min-width: 12rem;
-        font-size: 0.68rem;
     }
 }
