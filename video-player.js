@@ -2,8 +2,9 @@
     const videoEmbed = document.querySelector('.video-embed');
     const iframe = document.getElementById('heroVideo');
     const audioPlayer = document.getElementById('audioPlayer');
+    const startHitarea = document.querySelector('.video-start-hitarea');
 
-    if (!videoEmbed || !iframe || !audioPlayer) return;
+    if (!videoEmbed || !iframe || !audioPlayer || !startHitarea) return;
 
     let player;
     let apiReady = false;
@@ -13,6 +14,14 @@
     function setVideoState(isActive) {
         videoEmbed.classList.toggle('is-active', isActive);
         document.body.classList.toggle('video-active', isActive);
+    }
+
+    function markStarted() {
+        videoEmbed.classList.add('is-started');
+    }
+
+    function clearStarted() {
+        videoEmbed.classList.remove('is-started');
     }
 
     function clearSyncInterval() {
@@ -76,6 +85,7 @@
         }
 
         pendingStart = false;
+        markStarted();
         setVideoState(true);
         await playReactiveAudio();
         startSyncLoop();
@@ -133,16 +143,22 @@
 
                     if (data === window.YT.PlayerState.ENDED) {
                         audioPlayer.currentTime = 0;
+                        clearStarted();
                     }
                 }
             }
         });
     };
 
+    startHitarea.addEventListener('click', () => {
+        startExperience();
+    });
+
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             setVideoState(false);
             pauseReactiveAudio();
+            clearStarted();
         }
     });
 

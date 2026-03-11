@@ -137,6 +137,21 @@ body.video-active #mainText {
     transition: transform 0.35s ease, box-shadow 0.35s ease, z-index 0.35s ease;
 }
 
+.video-start-hitarea {
+    position: absolute;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.video-embed.is-started .video-start-hitarea,
+.video-embed.is-active .video-start-hitarea {
+    pointer-events: none;
+}
+
 .video-embed.is-active {
     z-index: 30;
     transform: translateY(0) scale(1.03);
