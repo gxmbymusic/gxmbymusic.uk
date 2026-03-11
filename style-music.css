@@ -180,7 +180,7 @@ body.video-active #mainText {
 .ghost-text {
     grid-area: 1 / 1;
     position: relative;
-    z-index: 12;
+    z-index: 36;
     font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
     font-size: clamp(3rem, 28vw, 25rem);
     font-weight: 900;

@@ -43,7 +43,7 @@
                 color: ${GHOST_COLORS[i]};
                 opacity: 0;
                 pointer-events: none;
-                z-index: ${12 + i};
+                z-index: ${36 + i};
                 will-change: transform, opacity;
                 text-shadow: 0 0 10px ${GHOST_COLORS[i]};
                 user-select: none;
