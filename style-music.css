@@ -82,7 +82,7 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 10;
-    padding: 1.5rem 1rem 6rem;
+    padding: 1rem 1rem 6rem;
 }
 
 .text-container {
@@ -90,9 +90,9 @@ body {
     width: 100%;
     max-width: 90vw;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: clamp(1rem, 2.5vw, 1.75rem);
+    justify-content: center;
+    min-height: min(72vw, 34rem);
 }
 
 h1 {
@@ -119,12 +119,15 @@ h1 {
 }
 
 .video-embed {
-    position: relative;
-    z-index: 10;
-    width: min(78vw, 560px);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    width: min(62vw, 560px);
     aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%);
     border: 1px solid rgba(0, 0, 0, 0.15);
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.82);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
     overflow: hidden;
 }
@@ -193,8 +196,12 @@ h1 {
         padding-bottom: 7.5rem;
     }
 
+    .text-container {
+        min-height: min(96vw, 28rem);
+    }
+
     .video-embed {
-        width: min(90vw, 420px);
+        width: min(88vw, 420px);
     }
 
     .social-links {
