@@ -112,15 +112,11 @@ h1 {
 
 #mainText {
     position: relative;
-    z-index: 10;
+    z-index: 40;
     letter-spacing: -0.2em;
     will-change: transform, opacity, filter;
     transform-origin: center center;
     text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-}
-
-body.video-active #mainText {
-    opacity: 0.2 !important;
 }
 
 .video-embed {
@@ -155,6 +151,7 @@ body.video-active #mainText {
     position: absolute;
     top: 50%;
     left: 50%;
+    z-index: 36;
     transform: translate(-50%, -50%);
     font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
     font-size: clamp(3rem, 28vw, 25rem);

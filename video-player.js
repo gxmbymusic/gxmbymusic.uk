@@ -1,63 +1,43 @@
 (function() {
     const videoEmbed = document.querySelector('.video-embed');
     const iframe = document.getElementById('heroVideo');
-    const audioPlayer = document.getElementById('audioPlayer');
 
-    if (!videoEmbed || !iframe || !audioPlayer) return;
+    if (!videoEmbed || !iframe) return;
 
     let player;
     let apiReady = false;
-    let syncInterval = null;
+    let stateInterval = null;
 
     function setVideoState(isActive) {
         videoEmbed.classList.toggle('is-active', isActive);
         document.body.classList.toggle('video-active', isActive);
     }
 
-    function clearSyncInterval() {
-        if (syncInterval) {
-            window.clearInterval(syncInterval);
-            syncInterval = null;
+    function clearStateInterval() {
+        if (stateInterval) {
+            window.clearInterval(stateInterval);
+            stateInterval = null;
         }
     }
 
-    function syncAudioToVideo(force = false) {
-        if (!player || typeof player.getCurrentTime !== 'function' || audioPlayer.readyState === 0) {
+    function updateTimeline(isPlaying) {
+        if (!player || typeof player.getCurrentTime !== 'function') {
             return;
         }
 
-        const videoTime = player.getCurrentTime();
-        if (!Number.isFinite(videoTime)) return;
-
-        const drift = Math.abs(audioPlayer.currentTime - videoTime);
-        if (force || drift > 0.3) {
-            const maxTime = Number.isFinite(audioPlayer.duration) ? audioPlayer.duration : videoTime;
-            const targetTime = Math.max(0, Math.min(videoTime, maxTime));
-            if (Math.abs(audioPlayer.currentTime - targetTime) > 0.05) {
-                audioPlayer.currentTime = targetTime;
-            }
+        if (window.GXMBYTimeline && typeof window.GXMBYTimeline.setPlaybackState === 'function') {
+            window.GXMBYTimeline.setPlaybackState({
+                isPlaying,
+                currentTime: player.getCurrentTime()
+            });
         }
     }
 
-    async function playReactiveAudio() {
-        syncAudioToVideo(true);
-        try {
-            await audioPlayer.play();
-        } catch (error) {
-            console.warn('Hidden reactive audio failed to play:', error);
-        }
-    }
-
-    function pauseReactiveAudio() {
-        audioPlayer.pause();
-        clearSyncInterval();
-    }
-
-    function startSyncLoop() {
-        clearSyncInterval();
-        syncInterval = window.setInterval(() => {
-            syncAudioToVideo(false);
-        }, 350);
+    function startStateInterval() {
+        clearStateInterval();
+        stateInterval = window.setInterval(() => {
+            updateTimeline(true);
+        }, 120);
     }
 
     function loadYouTubeApi() {
@@ -86,26 +66,23 @@
                 onStateChange: ({ data }) => {
                     if (data === window.YT.PlayerState.PLAYING) {
                         setVideoState(true);
-                        playReactiveAudio();
-                        startSyncLoop();
+                        updateTimeline(true);
+                        startStateInterval();
                         return;
                     }
 
                     if (data === window.YT.PlayerState.BUFFERING) {
                         setVideoState(true);
-                        syncAudioToVideo(true);
+                        updateTimeline(true);
                         return;
                     }
 
                     setVideoState(false);
-                    pauseReactiveAudio();
+                    clearStateInterval();
+                    updateTimeline(false);
 
                     if (data === window.YT.PlayerState.PAUSED || data === window.YT.PlayerState.CUED) {
-                        syncAudioToVideo(true);
-                    }
-
-                    if (data === window.YT.PlayerState.ENDED) {
-                        audioPlayer.currentTime = 0;
+                        updateTimeline(false);
                     }
                 }
             }
@@ -115,11 +92,12 @@
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             setVideoState(false);
-            pauseReactiveAudio();
+            clearStateInterval();
+            updateTimeline(false);
         }
     });
 
-    window.addEventListener('beforeunload', clearSyncInterval);
+    window.addEventListener('beforeunload', clearStateInterval);
 
     loadYouTubeApi();
 })();
