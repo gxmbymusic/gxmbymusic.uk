@@ -89,25 +89,25 @@
         
         // Effect Intensity Multipliers (0-1)
         intensity: {
-            scale: 1.0,           // Scale effect intensity
-            rotation: 1.0,         // Rotation effect intensity
-            skew: 1.0,             // Skew effect intensity
+            scale: 1.6,           // Scale effect intensity
+            rotation: 1.8,         // Rotation effect intensity
+            skew: 1.5,             // Skew effect intensity
             opacity: 1.0,          // Opacity effect intensity
-            glow: 1.0,             // Glow effect intensity
-            color: 0.5,            // Color effect intensity (subtle)
+            glow: 2.2,             // Glow effect intensity
+            color: 1.2,            // Color effect intensity
             blur: 1.0,             // Blur effect intensity
-            brightness: 1.0,       // Brightness effect intensity
-            letterSpacing: 1.0     // Letter spacing effect intensity
+            brightness: 1.3,       // Brightness effect intensity
+            letterSpacing: 1.8     // Letter spacing effect intensity
         },
         
         // Ghost text effect settings
         ghost: {
-            kickSnareThreshold: 0.15,    // Kick/snare frequency threshold (150-400 Hz) - lowered
-            transientThreshold: 0.08,    // Transient threshold (percussive attack) - lowered
-            scaleMax: 1.4,               // Maximum scale for ghost expansion
-            opacityMax: 0.7,             // Maximum opacity for ghost
-            duration: 0.5,               // Duration of ghost pulse (seconds, faster)
-            cooldown: 0.1                // Minimum time between pulses (seconds, reduced for faster response)
+            kickSnareThreshold: 0.1,     // Kick/snare frequency threshold (150-400 Hz)
+            transientThreshold: 0.05,    // Transient threshold (percussive attack)
+            scaleMax: 1.9,               // Maximum scale for ghost expansion
+            opacityMax: 0.85,            // Maximum opacity for ghost
+            duration: 0.65,              // Duration of ghost pulse (seconds)
+            cooldown: 0.08               // Minimum time between pulses (seconds)
         },
         
         // Smoothing Rates (0-1, lower = faster response)
@@ -125,15 +125,15 @@
         
         // Effect Ranges
         ranges: {
-            scale: { min: 0.95, max: 1.05 },
-            rotation: { min: -0.5, max: 0.5 },      // degrees (more subtle)
-            skew: { min: -1, max: 1 },           // degrees
-            opacity: { min: 0.9, max: 1.0 },
-            glow: { min: 0, max: 20 },           // px blur radius
-            color: { min: 0, max: 10 },         // degrees hue-rotate
-            blur: { min: 0, max: 2 },           // px
-            brightness: { min: 0.95, max: 1.05 },
-            letterSpacing: { min: -0.3, max: 0.1 } // em
+            scale: { min: 0.9, max: 1.14 },
+            rotation: { min: -3.5, max: 3.5 },   // degrees
+            skew: { min: -6, max: 6 },           // degrees
+            opacity: { min: 0.65, max: 1.0 },
+            glow: { min: 0, max: 50 },           // px blur radius
+            color: { min: 0, max: 28 },          // degrees hue-rotate
+            blur: { min: 0, max: 3 },            // px
+            brightness: { min: 0.82, max: 1.25 },
+            letterSpacing: { min: -0.34, max: 0.16 } // em
         },
         
         // Thresholds
@@ -150,6 +150,7 @@
     let frequencyData;
     let timeData;
     let source;
+    let silentGain;
     let isInitialized = false;
     
     // Ghost pulse tracking
@@ -200,8 +201,12 @@
 
             // Connect audio element to analyser
             source = audioContext.createMediaElementSource(audioPlayer);
+            silentGain = audioContext.createGain();
+            silentGain.gain.value = 0;
+
             source.connect(analyser);
-            analyser.connect(audioContext.destination);
+            analyser.connect(silentGain);
+            silentGain.connect(audioContext.destination);
 
             isInitialized = true;
             

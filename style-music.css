@@ -120,7 +120,7 @@ h1 {
 }
 
 body.video-active #mainText {
-    opacity: 0.2 !important;
+    opacity: 0.06 !important;
 }
 
 .video-embed {
