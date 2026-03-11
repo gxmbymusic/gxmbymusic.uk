@@ -137,32 +137,6 @@ body.video-active #mainText {
     transition: transform 0.35s ease, box-shadow 0.35s ease, z-index 0.35s ease;
 }
 
-.video-play-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 40;
-    border: 0;
-    background: rgba(0, 0, 0, 0.12);
-    color: #ffffff;
-    font-family: 'OpenSauceSans', sans-serif;
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 0.25s ease, background-color 0.25s ease;
-}
-
-.video-play-overlay:hover {
-    background: rgba(0, 0, 0, 0.18);
-}
-
-.video-embed.is-started .video-play-overlay,
-.video-embed.is-active .video-play-overlay {
-    opacity: 0;
-    pointer-events: none;
-}
-
 .video-embed.is-active {
     z-index: 30;
     transform: translateY(0) scale(1.03);
