@@ -2,9 +2,8 @@
     const videoEmbed = document.querySelector('.video-embed');
     const iframe = document.getElementById('heroVideo');
     const audioPlayer = document.getElementById('audioPlayer');
-    const startHitarea = document.querySelector('.video-start-hitarea');
 
-    if (!videoEmbed || !iframe || !audioPlayer || !startHitarea) return;
+    if (!videoEmbed || !iframe || !audioPlayer) return;
 
     let player;
     let apiReady = false;
@@ -150,9 +149,11 @@
         });
     };
 
-    startHitarea.addEventListener('click', () => {
-        startExperience();
-    });
+    videoEmbed.addEventListener('pointerdown', () => {
+        if (!videoEmbed.classList.contains('is-started')) {
+            startExperience();
+        }
+    }, { capture: true });
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

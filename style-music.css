@@ -137,33 +137,6 @@ body.video-active #mainText {
     transition: transform 0.35s ease, box-shadow 0.35s ease, z-index 0.35s ease;
 }
 
-.video-start-hitarea {
-    position: absolute;
-    inset: 0;
-    z-index: 45;
-    display: block;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    outline: none;
-    color: transparent;
-    font-size: 0;
-    line-height: 0;
-    cursor: pointer;
-}
-
-.video-embed.is-started .video-start-hitarea,
-.video-embed.is-active .video-start-hitarea {
-    pointer-events: none;
-}
-
 .video-embed.is-active {
     z-index: 30;
     transform: translateY(0) scale(1.03);
