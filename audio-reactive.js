@@ -30,10 +30,8 @@
             // Copy all computed styles from mainText for exact positioning
             const mainStyles = window.getComputedStyle(mainText);
             ghost.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
+                grid-area: 1 / 1;
+                position: relative;
                 font-family: ${mainStyles.fontFamily};
                 font-size: ${mainStyles.fontSize};
                 font-weight: ${mainStyles.fontWeight};
@@ -41,12 +39,11 @@
                 line-height: ${mainStyles.lineHeight};
                 text-align: ${mainStyles.textAlign};
                 text-transform: ${mainStyles.textTransform};
-                padding-top: ${mainStyles.paddingTop};
                 margin: 0;
                 color: ${GHOST_COLORS[i]};
                 opacity: 0;
                 pointer-events: none;
-                z-index: ${i + 1};
+                z-index: ${12 + i};
                 will-change: transform, opacity;
                 text-shadow: 0 0 10px ${GHOST_COLORS[i]};
                 user-select: none;
@@ -508,13 +505,13 @@
                     ghost.opacity = CONFIG.ghost.opacityMax * (1 - progress);
                     
                     // Apply transform and opacity
-                    ghost.element.style.transform = `translateX(-50%) scale(${ghost.scale})`;
+                    ghost.element.style.transform = `scale(${ghost.scale})`;
                     ghost.element.style.opacity = ghost.opacity;
                 } else if (elapsed >= CONFIG.ghost.duration) {
                     // Pulse completed, reset
                     ghost.pulseStartTime = undefined;
                     ghost.element.style.opacity = 0;
-                    ghost.element.style.transform = 'translateX(-50%) scale(1)';
+                    ghost.element.style.transform = 'scale(1)';
                 }
             }
         });

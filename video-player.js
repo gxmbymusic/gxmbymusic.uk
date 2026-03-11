@@ -2,16 +2,26 @@
     const videoEmbed = document.querySelector('.video-embed');
     const iframe = document.getElementById('heroVideo');
     const audioPlayer = document.getElementById('audioPlayer');
+    const playOverlay = document.querySelector('.video-play-overlay');
 
-    if (!videoEmbed || !iframe || !audioPlayer) return;
+    if (!videoEmbed || !iframe || !audioPlayer || !playOverlay) return;
 
     let player;
     let apiReady = false;
     let syncInterval = null;
+    let pendingStart = false;
 
     function setVideoState(isActive) {
         videoEmbed.classList.toggle('is-active', isActive);
         document.body.classList.toggle('video-active', isActive);
+    }
+
+    function markStarted() {
+        videoEmbed.classList.add('is-started');
+    }
+
+    function clearStarted() {
+        videoEmbed.classList.remove('is-started');
     }
 
     function clearSyncInterval() {
@@ -60,6 +70,20 @@
         }, 350);
     }
 
+    async function startExperience() {
+        if (!player || typeof player.playVideo !== 'function') {
+            pendingStart = true;
+            return;
+        }
+
+        pendingStart = false;
+        markStarted();
+        setVideoState(true);
+        await playReactiveAudio();
+        startSyncLoop();
+        player.playVideo();
+    }
+
     function loadYouTubeApi() {
         if (window.YT && typeof window.YT.Player === 'function') {
             onYouTubeIframeAPIReady();
@@ -83,6 +107,11 @@
 
         player = new window.YT.Player('heroVideo', {
             events: {
+                onReady: () => {
+                    if (pendingStart) {
+                        startExperience();
+                    }
+                },
                 onStateChange: ({ data }) => {
                     if (data === window.YT.PlayerState.PLAYING) {
                         setVideoState(true);
@@ -106,16 +135,22 @@
 
                     if (data === window.YT.PlayerState.ENDED) {
                         audioPlayer.currentTime = 0;
+                        clearStarted();
                     }
                 }
             }
         });
     };
 
+    playOverlay.addEventListener('click', () => {
+        startExperience();
+    });
+
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             setVideoState(false);
             pauseReactiveAudio();
+            clearStarted();
         }
     });
 
