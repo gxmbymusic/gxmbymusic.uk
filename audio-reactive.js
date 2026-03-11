@@ -150,6 +150,7 @@
     let silentGain;
     let isInitialized = false;
     let animationStarted = false;
+    let lastTransient = 0;
     
     // Ghost pulse tracking
     let lastPulseTime = 0;
@@ -345,6 +346,7 @@
             const rms = getRMSLevel();
             const bands = getFrequencyBands();
             const transient = getTransientLevel();
+            lastTransient = transient;
             
             // Apply noise threshold
             const effectiveRMS = rms > CONFIG.noiseThreshold ? rms : 0;
@@ -595,6 +597,21 @@
 
     window.GXMBYReactive = {
         start: startReactiveAudio,
-        pause: resetToBaseValues
+        pause: resetToBaseValues,
+        getDebugState: () => ({
+            initialized: isInitialized,
+            animationStarted,
+            audioContextState: audioContext ? audioContext.state : 'none',
+            readyState: audioPlayer.readyState,
+            paused: audioPlayer.paused,
+            currentTime: Number(audioPlayer.currentTime || 0).toFixed(2),
+            duration: Number(audioPlayer.duration || 0).toFixed(2),
+            rms: Number(smoothedValues.rms || 0).toFixed(3),
+            bass: Number(smoothedValues.bass || 0).toFixed(3),
+            kick: Number(smoothedValues.kickSnare || 0).toFixed(3),
+            mid: Number(smoothedValues.mid || 0).toFixed(3),
+            treble: Number(smoothedValues.treble || 0).toFixed(3),
+            transient: Number(lastTransient || 0).toFixed(3)
+        })
     };
 })();

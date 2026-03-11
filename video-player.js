@@ -9,10 +9,45 @@
     let apiReady = false;
     let syncInterval = null;
     let pendingStart = false;
+    let lastPlayerState = 'uninitialized';
+    const debugPanel = document.getElementById('debugPanel');
 
     function setVideoState(isActive) {
         videoEmbed.classList.toggle('is-active', isActive);
         document.body.classList.toggle('video-active', isActive);
+    }
+
+    function renderDebug() {
+        if (!debugPanel) return;
+
+        const reactiveState = window.GXMBYReactive && typeof window.GXMBYReactive.getDebugState === 'function'
+            ? window.GXMBYReactive.getDebugState()
+            : null;
+
+        const lines = [
+            `yt: ${lastPlayerState}`,
+            `video-active: ${videoEmbed.classList.contains('is-active')}`,
+            `started: ${videoEmbed.classList.contains('is-started')}`,
+            `audio-readyState: ${audioPlayer.readyState}`,
+            `audio-paused: ${audioPlayer.paused}`,
+            `audio-time: ${Number(audioPlayer.currentTime || 0).toFixed(2)}`
+        ];
+
+        if (reactiveState) {
+            lines.push(`ctx: ${reactiveState.audioContextState}`);
+            lines.push(`reactive-init: ${reactiveState.initialized}`);
+            lines.push(`anim-loop: ${reactiveState.animationStarted}`);
+            lines.push(`rms: ${reactiveState.rms}`);
+            lines.push(`bass: ${reactiveState.bass}`);
+            lines.push(`kick: ${reactiveState.kick}`);
+            lines.push(`mid: ${reactiveState.mid}`);
+            lines.push(`treble: ${reactiveState.treble}`);
+            lines.push(`transient: ${reactiveState.transient}`);
+        } else {
+            lines.push('reactive: unavailable');
+        }
+
+        debugPanel.textContent = lines.join('\n');
     }
 
     function markStarted() {
@@ -120,6 +155,7 @@
                     }
                 },
                 onStateChange: ({ data }) => {
+                    lastPlayerState = String(data);
                     if (data === window.YT.PlayerState.PLAYING) {
                         setVideoState(true);
                         playReactiveAudio();
@@ -164,6 +200,8 @@
     });
 
     window.addEventListener('beforeunload', clearSyncInterval);
+    window.setInterval(renderDebug, 200);
+    renderDebug();
 
     loadYouTubeApi();
 })();
