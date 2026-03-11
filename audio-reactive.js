@@ -149,6 +149,7 @@
     let source;
     let silentGain;
     let isInitialized = false;
+    let animationStarted = false;
     
     // Ghost pulse tracking
     let lastPulseTime = 0;
@@ -206,12 +207,28 @@
             silentGain.connect(audioContext.destination);
 
             isInitialized = true;
-            
-            // Start animation loop
-            animateVisualEffects();
+            startAnimationLoop();
         } catch (error) {
             console.log('Audio context initialization failed:', error);
         }
+    }
+
+    function startAnimationLoop() {
+        if (animationStarted) return;
+        animationStarted = true;
+        animateVisualEffects();
+    }
+
+    async function startReactiveAudio() {
+        if (!isInitialized) {
+            initializeAudioContext();
+        }
+
+        if (audioContext && audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
+
+        startAnimationLoop();
     }
 
     // ============================================
@@ -478,10 +495,11 @@
         const currentTime = performance.now() / 1000; // Convert to seconds
         const kickSnare = smoothedValues.kickSnare;
         const transient = getTransientLevel();
+        const ghostBaseOpacity = Math.min(0.22, smoothedValues.rms * 0.55);
         
         // Check if we should trigger a new ghost pulse (requires BOTH kick/snare frequency AND transient)
         // This filters out sustained bass notes and only catches actual drum hits
-        if (kickSnare > CONFIG.ghost.kickSnareThreshold && 
+        if ((kickSnare > CONFIG.ghost.kickSnareThreshold || smoothedValues.rms > 0.08) && 
             transient > CONFIG.ghost.transientThreshold &&
             currentTime - lastPulseTime > CONFIG.ghost.cooldown) {
             triggerGhostPulse();
@@ -490,6 +508,13 @@
         
         // Update each ghost layer
         ghostLayers.forEach((ghost, index) => {
+            const direction = index % 2 === 0 ? 1 : -1;
+            const rmsOffset = smoothedValues.rms * (12 + index * 3) * direction;
+            const rotation = smoothedValues.rotation * (1.2 + index * 0.18);
+            const skew = smoothedValues.skew * 0.35 * direction;
+            let visualScale = 1 + smoothedValues.rms * (0.1 + index * 0.025);
+            let visualOpacity = ghostBaseOpacity * (1 - index * 0.12);
+
             if (ghost.pulseStartTime !== undefined) {
                 const elapsed = currentTime - ghost.pulseStartTime - ghost.delay;
                 
@@ -503,17 +528,20 @@
                     
                     // Opacity fades from opacityMax to 0
                     ghost.opacity = CONFIG.ghost.opacityMax * (1 - progress);
-                    
-                    // Apply transform and opacity
-                    ghost.element.style.transform = `scale(${ghost.scale})`;
-                    ghost.element.style.opacity = ghost.opacity;
                 } else if (elapsed >= CONFIG.ghost.duration) {
                     // Pulse completed, reset
                     ghost.pulseStartTime = undefined;
                     ghost.element.style.opacity = 0;
-                    ghost.element.style.transform = 'scale(1)';
+                    ghost.scale = 1;
+                    ghost.opacity = 0;
                 }
             }
+
+            visualScale = Math.max(visualScale, ghost.scale || 1);
+            visualOpacity = Math.max(visualOpacity, ghost.opacity || 0);
+
+            ghost.element.style.transform = `translateX(${rmsOffset}px) rotate(${rotation}deg) skewX(${skew}deg) scale(${visualScale})`;
+            ghost.element.style.opacity = Math.max(0, visualOpacity);
         });
     }
 
@@ -550,13 +578,7 @@
     
     // Initialize audio context on first play
     audioPlayer.addEventListener('play', () => {
-        if (!isInitialized) {
-            initializeAudioContext();
-        }
-        // Resume audio context if suspended
-        if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
+        startReactiveAudio();
     });
 
     // Optional: Add visual feedback when audio context is ready
@@ -570,4 +592,9 @@
     audioPlayer.addEventListener('pause', () => {
         resetToBaseValues();
     });
+
+    window.GXMBYReactive = {
+        start: startReactiveAudio,
+        pause: resetToBaseValues
+    };
 })();

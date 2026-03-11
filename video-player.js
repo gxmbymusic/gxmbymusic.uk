@@ -50,6 +50,10 @@
     }
 
     async function playReactiveAudio() {
+        if (window.GXMBYReactive && typeof window.GXMBYReactive.start === 'function') {
+            await window.GXMBYReactive.start();
+        }
+
         syncAudioToVideo(true);
         try {
             await audioPlayer.play();
@@ -61,6 +65,10 @@
     function pauseReactiveAudio() {
         audioPlayer.pause();
         clearSyncInterval();
+
+        if (window.GXMBYReactive && typeof window.GXMBYReactive.pause === 'function') {
+            window.GXMBYReactive.pause();
+        }
     }
 
     function startSyncLoop() {
