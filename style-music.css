@@ -77,7 +77,8 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100dvh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,16 +202,20 @@ h1 {
 
 @media (max-width: 767px) {
     .content-wrapper {
-        padding-bottom: 7.5rem;
+        height: 100dvh;
+        min-height: 100svh;
+        padding-top: calc(env(safe-area-inset-top) + 2rem);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 9rem);
     }
 
     .text-container {
-        min-height: min(96vw, 28rem);
+        max-width: 92vw;
+        min-height: min(82vw, 22rem);
     }
 
     .video-embed {
-        width: min(96vw, 640px);
-        transform: translateY(1rem);
+        width: min(92vw, 560px);
+        transform: none;
     }
 
     .social-links {
