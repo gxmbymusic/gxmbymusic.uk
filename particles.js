@@ -1,238 +1,150 @@
-// Particle animation matching dariusatsu.com configuration
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
+/* ============================================================
+   particles.js
+   Lightweight particle field. Exposes window.Particles so the
+   main engine can drive it from the shared rAF loop.
+   ============================================================ */
 
-// Set canvas size
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    updateElementBounds();
-}
+(function () {
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
 
-// Track DOM elements for interaction
-let elementBounds = [];
-function updateElementBounds() {
-    const elements = [
-        document.getElementById('mainText'),
-        document.querySelector('.music-player'),
-        document.querySelector('.progress-container')
-    ];
-    
-    elementBounds = elements
-        .filter(el => el) // Filter out nulls if elements don't exist
-        .map(el => {
-            const rect = el.getBoundingClientRect();
-            return {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2,
-                radius: Math.max(rect.width, rect.height) / 2 + 40 // Larger radius for attraction
-            };
-        });
-}
+    // ── Config ──────────────────────────────────────────────
+    const COUNT          = 55;
+    const CONNECT_DIST   = 140;
+    const CONNECT_DIST_SQ= CONNECT_DIST * CONNECT_DIST;
+    const GRAB_DIST_SQ   = 180 * 180;
+    const ATTRACT_F      = 0.045;
+    const SPEED_BOOST    = 0.08;
+    const MAX_SPEED      = 4.5;
+    const BASE_OPACITY   = 0.38;
+    const FRICTION       = 0.965;
 
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-// Update bounds on scroll as well since elements might move relative to viewport (though fixed elements won't)
-window.addEventListener('scroll', updateElementBounds);
+    // ── State ────────────────────────────────────────────────
+    const mouse = { x: null, y: null };
+    const particles = [];
 
-// Particle configuration (matching dariusatsu.com)
-const particles = [];
-const particleCount = 60; // Matching dariusatsu.com
-const connectionDistance = 150;
-const grabDistance = 200;
-const interactionRadius = 150; // Radius around mouse/elements for interaction
-const attractionForce = 0.05; // Gentle pull strength
-const speedBoost = 0.1; // Acceleration when excited
-const maxSpeed = 5; // Cap speed to prevent chaos
-const mouse = { x: null, y: null, isDown: false };
+    // energy passed in from audio engine each frame (0–1)
+    let _energy = 0;
 
-// Mouse events
-window.addEventListener('mousemove', (e) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
-});
-
-window.addEventListener('mouseout', () => {
-    mouse.x = null;
-    mouse.y = null;
-});
-
-window.addEventListener('mousedown', () => {
-    mouse.isDown = true;
-});
-
-window.addEventListener('mouseup', () => {
-    mouse.isDown = false;
-});
-
-// Click to add particles (push mode)
-canvas.addEventListener('click', (e) => {
-    for (let i = 0; i < 3; i++) {
-        particles.push(new Particle(e.x, e.y));
+    // ── Resize ───────────────────────────────────────────────
+    function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
-    // Remove excess particles
-    if (particles.length > particleCount + 20) {
-        particles.splice(0, 3);
-    }
-});
+    resize();
+    window.addEventListener('resize', resize);
 
-// Particle class
-class Particle {
-    constructor(x = null, y = null) {
-        this.x = x !== null ? x : Math.random() * canvas.width;
-        this.y = y !== null ? y : Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 4; // Speed: 2 (matching dariusatsu.com)
-        this.vy = (Math.random() - 0.5) * 2;
-        this.size = Math.random() * 1.5 + 0.5; // Size: 1 with random variation
-        this.baseOpacity = 0.4;
-        this.opacity = this.baseOpacity;
-        this.friction = 0.96; // Slightly less friction to keep momentum
-    }
+    // ── Mouse ────────────────────────────────────────────────
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
-    update() {
-        let excited = false;
+    canvas.addEventListener('click', e => {
+        for (let i = 0; i < 3; i++) particles.push(new Particle(e.clientX, e.clientY));
+        if (particles.length > COUNT + 15) particles.splice(0, 3);
+    });
 
-        // Apply mouse attraction and excitation
-        if (mouse.x !== null && mouse.y !== null) {
-            const dx = mouse.x - this.x;
-            const dy = mouse.y - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < interactionRadius) {
-                excited = true;
-                const forceDirectionX = dx / distance;
-                const forceDirectionY = dy / distance;
-                
-                // Attraction
-                this.vx += forceDirectionX * attractionForce;
-                this.vy += forceDirectionY * attractionForce;
-
-                // Speed boost (random direction to simulate energy)
-                this.vx += (Math.random() - 0.5) * speedBoost;
-                this.vy += (Math.random() - 0.5) * speedBoost;
-            }
+    // ── Particle ─────────────────────────────────────────────
+    class Particle {
+        constructor(x, y) {
+            this.x  = x  ?? Math.random() * canvas.width;
+            this.y  = y  ?? Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 3;
+            this.vy = (Math.random() - 0.5) * 1.5;
+            this.r  = Math.random() * 1.4 + 0.5;
         }
 
-        // Apply element attraction and excitation
-        elementBounds.forEach(bound => {
-            // Simple box check first
-            if (this.x > bound.x - 100 && this.x < bound.x + bound.width + 100 &&
-                this.y > bound.y - 100 && this.y < bound.y + bound.height + 100) {
-                
-                const dx = bound.centerX - this.x;
-                const dy = bound.centerY - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < bound.radius) {
-                    excited = true;
-                    const forceDirectionX = dx / distance;
-                    const forceDirectionY = dy / distance;
-                    
-                    // Gentler attraction for elements
-                    this.vx += forceDirectionX * attractionForce * 0.5;
-                    this.vy += forceDirectionY * attractionForce * 0.5;
-
-                    // Speed boost
-                    this.vx += (Math.random() - 0.5) * speedBoost * 0.5;
-                    this.vy += (Math.random() - 0.5) * speedBoost * 0.5;
+        update(energy) {
+            // Mouse interaction
+            if (mouse.x !== null) {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq < GRAB_DIST_SQ) {
+                    const d = Math.sqrt(dSq);
+                    this.vx += (dx / d) * ATTRACT_F;
+                    this.vy += (dy / d) * ATTRACT_F;
+                    this.vx += (Math.random() - 0.5) * SPEED_BOOST;
+                    this.vy += (Math.random() - 0.5) * SPEED_BOOST;
                 }
             }
-        });
 
-        // Move particle
-        this.x += this.vx;
-        this.y += this.vy;
+            // Audio energy nudge — particles get restless on loud moments
+            if (energy > 0.55) {
+                this.vx += (Math.random() - 0.5) * SPEED_BOOST * energy;
+                this.vy += (Math.random() - 0.5) * SPEED_BOOST * energy;
+            }
 
-        // Cap speed
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (speed > maxSpeed) {
-            this.vx = (this.vx / speed) * maxSpeed;
-            this.vy = (this.vy / speed) * maxSpeed;
+            this.vx *= FRICTION;
+            this.vy *= FRICTION;
+
+            // Cap speed
+            const spd = this.vx * this.vx + this.vy * this.vy;
+            if (spd > MAX_SPEED * MAX_SPEED) {
+                const inv = MAX_SPEED / Math.sqrt(spd);
+                this.vx *= inv;
+                this.vy *= inv;
+            }
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Bounce
+            if (this.x <= 0 || this.x >= canvas.width)  { this.vx *= -1; this.x = Math.max(0, Math.min(canvas.width,  this.x)); }
+            if (this.y <= 0 || this.y >= canvas.height) { this.vy *= -1; this.y = Math.max(0, Math.min(canvas.height, this.y)); }
         }
-
-        // Bounce off edges
-        if (this.x <= 0 || this.x >= canvas.width) {
-            this.vx *= -1;
-            this.x = Math.max(0, Math.min(canvas.width, this.x));
-        }
-        if (this.y <= 0 || this.y >= canvas.height) {
-            this.vy *= -1;
-            this.y = Math.max(0, Math.min(canvas.height, this.y));
-        }
-
-        // Reset opacity
-        this.opacity = this.baseOpacity;
     }
 
-    draw() {
-        ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
+    // ── Init ─────────────────────────────────────────────────
+    for (let i = 0; i < COUNT; i++) particles.push(new Particle());
 
-// Create initial particles
-for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-}
+    // ── Draw (called from engine) ─────────────────────────────
+    function draw(energy) {
+        _energy = energy;
 
-// Draw connections between particles
-function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if (distance < connectionDistance) {
-                let opacity = (1 - (distance / connectionDistance)) * 0.3;
-                
-                // Grab mode: increase opacity on hover
-                if (mouse.x !== null && mouse.y !== null) {
-                    const distToMouse1 = Math.sqrt(
-                        Math.pow(mouse.x - particles[i].x, 2) + 
-                        Math.pow(mouse.y - particles[i].y, 2)
-                    );
-                    const distToMouse2 = Math.sqrt(
-                        Math.pow(mouse.x - particles[j].x, 2) + 
-                        Math.pow(mouse.y - particles[j].y, 2)
-                    );
-                    
-                    if (distToMouse1 < grabDistance || distToMouse2 < grabDistance) {
-                        opacity = Math.min(opacity * 1.67, 0.5); // Increase to 0.5 on hover
-                    }
+        // Update all particles
+        for (let i = 0; i < particles.length; i++) particles[i].update(energy);
+
+        // Draw connections — use squared distance to avoid sqrt in hot path
+        ctx.lineWidth = 0.7;
+        for (let i = 0; i < particles.length; i++) {
+            const pi = particles[i];
+            for (let j = i + 1; j < particles.length; j++) {
+                const pj = particles[j];
+                const dx = pi.x - pj.x;
+                const dy = pi.y - pj.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq >= CONNECT_DIST_SQ) continue;
+
+                let alpha = (1 - dSq / CONNECT_DIST_SQ) * 0.28;
+
+                // Boost near mouse
+                if (mouse.x !== null) {
+                    const mdi = (mouse.x - pi.x) ** 2 + (mouse.y - pi.y) ** 2;
+                    const mdj = (mouse.x - pj.x) ** 2 + (mouse.y - pj.y) ** 2;
+                    if (mdi < GRAB_DIST_SQ || mdj < GRAB_DIST_SQ) alpha = Math.min(alpha * 1.7, 0.5);
                 }
 
-                ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
-                ctx.lineWidth = 0.8;
+                ctx.strokeStyle = `rgba(0,0,0,${alpha.toFixed(3)})`;
                 ctx.beginPath();
-                ctx.moveTo(particles[i].x, particles[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.moveTo(pi.x, pi.y);
+                ctx.lineTo(pj.x, pj.y);
                 ctx.stroke();
             }
         }
+
+        // Draw particles
+        ctx.fillStyle = `rgba(0,0,0,${BASE_OPACITY})`;
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
-}
 
-// Animation loop
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-    });
-
-    // Draw connections
-    drawConnections();
-
-    requestAnimationFrame(animate);
-}
-
-animate();
+    // ── Public API ───────────────────────────────────────────
+    window.Particles = { draw };
+})();
