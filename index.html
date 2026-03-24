@@ -1,65 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#ffffff">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <meta name="theme-color" content="#ffffff" />
 
-    <!-- OG / Social -->
-    <meta property="og:title" content="GXMBY">
-    <meta property="og:description" content="Music by GXMBY">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://gxmbymusic.uk">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="GXMBY">
+        <!-- OG / Social -->
+        <meta property="og:title" content="GXMBY" />
+        <meta property="og:description" content="Music by GXMBY" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://gxmbymusic.uk" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="GXMBY" />
 
-    <title>GXMBY</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+        <title>GXMBY</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <!-- Particle field -->
+        <canvas id="particleCanvas"></canvas>
 
-    <!-- Particle field -->
-    <canvas id="particleCanvas"></canvas>
+        <!-- Ghost text canvas (audio-reactive expanding rings) -->
+        <canvas id="ghostCanvas"></canvas>
 
-    <!-- Ghost text canvas (audio-reactive expanding rings) -->
-    <canvas id="ghostCanvas"></canvas>
+        <div class="content-wrapper">
+            <div class="text-container">
+                <!-- YouTube embed -->
+                <div class="video-embed" id="videoEmbed">
+                    <iframe
+                        id="heroVideo"
+                        class="video-frame"
+                        src="https://www.youtube.com/embed/dd2-Gkox3f0?enablejsapi=1&playsinline=1&rel=0&modestbranding=1"
+                        title="GXMBY — Expressions"
+                        allow="
+                            accelerometer;
+                            autoplay;
+                            clipboard-write;
+                            encrypted-media;
+                            gyroscope;
+                            picture-in-picture;
+                            web-share;
+                        "
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                    ></iframe>
+                </div>
 
-    <div class="content-wrapper">
-        <div class="text-container">
-
-            <!-- YouTube embed -->
-            <div class="video-embed" id="videoEmbed">
-                <iframe
-                    id="heroVideo"
-                    class="video-frame"
-                    src="https://www.youtube.com/embed/dd2-Gkox3f0?enablejsapi=1&playsinline=1&rel=0&modestbranding=1"
-                    title="GXMBY — Expressions"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen
-                ></iframe>
+                <!-- Main logo text -->
+                <h1 id="mainText">GXMBY</h1>
             </div>
 
-            <!-- Main logo text -->
-            <h1 id="mainText">GXMBY</h1>
+            <nav class="social-links" aria-label="Social links">
+                <a
+                    href="https://instagram.com/gxmby"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >instagram</a
+                >
+                <a
+                    href="https://x.com/gxmbysk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >x</a
+                >
+                <a
+                    href="https://soundcloud.com/gxmby"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >soundcloud</a
+                >
+            </nav>
         </div>
 
-        <nav class="social-links" aria-label="Social links">
-            <a href="https://instagram.com/gxmby" target="_blank" rel="noopener noreferrer">instagram</a>
-            <a href="https://x.com/gxmbysk" target="_blank" rel="noopener noreferrer">x</a>
-            <a href="https://soundcloud.com/gxmby" target="_blank" rel="noopener noreferrer">soundcloud</a>
-        </nav>
-    </div>
-
-    <!--
+        <!--
         Hidden audio element — plays the same track as the YouTube video.
         Web Audio API analyses this for real-time reactivity.
         Volume is 0; it never audibly plays.
     -->
-    <audio id="syncAudio" src="audio/Expressions.mp3" preload="none" crossorigin="anonymous"></audio>
+        <audio
+            id="syncAudio"
+            src="/audio/001-Expressions.mp3"
+            preload="none"
+            crossorigin="anonymous"
+        ></audio>
 
-    <script src="particles.js"></script>
-    <script src="engine.js"></script>
-    <script src="video-player.js"></script>
-</body>
+        <script src="particles.js"></script>
+        <script src="engine.js"></script>
+        <script src="video-player.js"></script>
+    </body>
 </html>
