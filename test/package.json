@@ -1,0 +1,16 @@
+{
+  "name": "gxmbymusic-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Regression tests for the gxmbymusic.uk release accordion",
+  "scripts": {
+    "test": "node accordion.test.js && node layout.test.js",
+    "test:accordion": "node accordion.test.js",
+    "test:layout": "node layout.test.js",
+    "setup": "npm install && npx playwright install chromium"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0",
+    "playwright": "^1.44.0"
+  }
+}
