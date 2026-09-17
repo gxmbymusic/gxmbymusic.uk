@@ -74,7 +74,7 @@
     }
   }
 
-  // Called by video-player.js when YouTube state changes
+  // Called by media.js when the reactive track's YouTube state changes
   function setPlayback({ playing, currentTime }) {
     isPlaying = playing;
     currentVideoTime = currentTime;
@@ -185,8 +185,16 @@
     // Get the rendered font size from the element so echoes match exactly
     const style = window.getComputedStyle(mainText);
     const fontSize = parseFloat(style.fontSize);
-    const cx = ghostCanvas.width / 2;
-    const cy = ghostCanvas.height / 2;
+
+    // Anchor to where the wordmark actually is. The ghost canvas is
+    // viewport-fixed but the page scrolls, so viewport-centre would
+    // drift away from the text as soon as you scroll to the releases.
+    const rect = mainText.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    // Nothing to draw once the hero has scrolled off screen
+    if (rect.bottom < 0 || rect.top > ghostCanvas.height) return;
 
     for (let i = echoes.length - 1; i >= 0; i--) {
       const e = echoes[i];
@@ -268,7 +276,7 @@
     requestAnimationFrame(tick);
   }
 
-  // ── Public API (used by video-player.js) ─────────────────
+  // ── Public API (used by media.js) ────────────────────────
   window.GXMBYEngine = { setPlayback };
 
   // ── Kick off ─────────────────────────────────────────────

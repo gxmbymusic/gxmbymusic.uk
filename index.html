@@ -2,10 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#ffffff" />
 
         <!-- OG / Social -->
@@ -15,6 +12,9 @@
         <meta property="og:url" content="https://gxmbymusic.uk" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="GXMBY" />
+
+        <link rel="preconnect" href="https://www.youtube.com" />
+        <link rel="preconnect" href="https://w.soundcloud.com" />
 
         <title>GXMBY</title>
         <link rel="stylesheet" href="style.css" />
@@ -26,33 +26,20 @@
         <!-- Ghost text canvas (audio-reactive expanding rings) -->
         <canvas id="ghostCanvas"></canvas>
 
-        <div class="content-wrapper">
-            <div class="text-container">
-                <!-- YouTube embed -->
-                <div class="video-embed" id="videoEmbed">
-                    <iframe
-                        id="heroVideo"
-                        class="video-frame"
-                        src="https://www.youtube.com/embed/dd2-Gkox3f0?enablejsapi=1&playsinline=1&rel=0&modestbranding=1"
-                        title="GXMBY — Expressions"
-                        allow="
-                            accelerometer;
-                            autoplay;
-                            clipboard-write;
-                            encrypted-media;
-                            gyroscope;
-                            picture-in-picture;
-                            web-share;
-                        "
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen
-                    ></iframe>
-                </div>
+        <!-- ── Hero ─────────────────────────────────────────── -->
+        <header class="hero">
+            <h1 id="mainText">GXMBY</h1>
+        </header>
 
-                <!-- Main logo text -->
-                <h1 id="mainText">GXMBY</h1>
-            </div>
+        <!-- ── Releases ─────────────────────────────────────── -->
+        <main class="releases">
+            <h2 class="releases-heading">Releases</h2>
 
+            <!-- Rows are built by media.js from the catalogue -->
+            <div id="mediaList" class="media-list"></div>
+        </main>
+
+        <footer class="site-footer">
             <nav class="social-links" aria-label="Social links">
                 <a
                     href="https://instagram.com/gxmby"
@@ -67,18 +54,24 @@
                     >x</a
                 >
                 <a
+                    href="https://youtube.com/@gxmby"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >youtube</a
+                >
+                <a
                     href="https://soundcloud.com/gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
                     >soundcloud</a
                 >
             </nav>
-        </div>
+        </footer>
 
         <!--
-        Hidden audio element — plays the same track as the YouTube video.
-        Web Audio API analyses this for real-time reactivity.
-        Volume is 0; it never audibly plays.
+        Hidden audio element — the local copy of "Expressions".
+        Web Audio analyses this for real-time reactivity while the
+        matching YouTube embed plays. Volume is 0; it never audibly plays.
     -->
         <audio
             id="syncAudio"
@@ -89,6 +82,6 @@
 
         <script src="particles.js"></script>
         <script src="engine.js"></script>
-        <script src="video-player.js"></script>
+        <script src="media.js"></script>
     </body>
 </html>

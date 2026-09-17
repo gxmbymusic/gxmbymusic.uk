@@ -1,7 +1,7 @@
 /* ============================================================
    GXMBY — style.css
-   Clean landing page. Everything visual lives in JS canvases
-   or on the two key DOM elements: #mainText and .video-embed.
+   Hero (audio-reactive canvases + wordmark) sits above a
+   scrolling accordion of every YouTube / SoundCloud release.
    ============================================================ */
 
 /* ── Fonts ─────────────────────────────────────────────────── */
@@ -55,27 +55,31 @@
     box-sizing: border-box;
 }
 
+/* `hidden` must beat the layout `display` on .media-panel */
+[hidden] { display: none !important; }
+
 :root {
     --bg: #ffffff;
     --fg: #000000;
     --fg-muted: rgba(0, 0, 0, 0.5);
+    --rule: rgba(0, 0, 0, 0.14);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html, body {
-    width: 100%;
-    height: 100%;
+html {
+    scroll-behavior: smooth;
 }
 
 body {
     background: var(--bg);
     color: var(--fg);
-    overflow: hidden;
-    position: fixed;
-    /* Prevent iOS bounce */
-    overscroll-behavior: none;
+    min-height: 100%;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* ── Canvases ───────────────────────────────────────────────── */
+/* Fixed ambient layers behind all content, across the whole scroll. */
 #particleCanvas,
 #ghostCanvas {
     position: fixed;
@@ -86,81 +90,20 @@ body {
 }
 
 #particleCanvas { z-index: 1; }
+#ghostCanvas    { z-index: 2; }
 
-/* Ghost canvas sits above particles, below everything else */
-#ghostCanvas { z-index: 2; }
-
-/* ── Layout ─────────────────────────────────────────────────── */
-.content-wrapper {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero {
+    position: relative;
     z-index: 10;
-    padding: 1rem 1rem 5rem;
-    /* Particle canvas handles pointer events; let clicks through wrapper */
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
     pointer-events: none;
 }
 
-.content-wrapper > * {
-    pointer-events: auto;
-}
-
-.text-container {
-    position: relative;
-    width: 100%;
-    max-width: 90vw;
-    display: grid;
-    place-items: center;
-    /* Reserve enough height for the stacked video + text */
-    min-height: min(72vw, 34rem);
-}
-
-/* ── Video embed ────────────────────────────────────────────── */
-.video-embed {
-    grid-area: 1 / 1;
-    position: relative;
-    z-index: 5;
-    width: min(84vw, 960px);
-    aspect-ratio: 16 / 9;
-    transform: translateY(1.5rem);
-
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10);
-    overflow: hidden;
-
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        z-index 0s 0.4s;
-}
-
-.video-embed.is-active {
-    z-index: 30;
-    transform: translateY(0) scale(1.02);
-    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
-    transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        z-index 0s 0s;
-}
-
-.video-frame {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-
-/* ── Main text ──────────────────────────────────────────────── */
 h1#mainText {
-    grid-area: 1 / 1;
-    position: relative;
-    z-index: 40;
-
     font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
     font-size: clamp(3rem, 28vw, 25rem);
     font-weight: 900;
@@ -174,25 +117,197 @@ h1#mainText {
     cursor: default;
     pointer-events: none;
 
-    /* GPU layer — JS will mutate transform/opacity/filter every frame */
+    /* GPU layer — JS mutates transform/opacity/filter every frame */
     will-change: transform, opacity, filter;
     transform-origin: center center;
 }
 
-/* When video is playing, text recedes behind it */
-body.video-active h1#mainText {
+/* ── Releases ───────────────────────────────────────────────── */
+.releases {
+    position: relative;
     z-index: 20;
+    width: min(100% - 2rem, 940px);
+    margin: 0 auto;
+    padding-bottom: 4rem;
+
+    /* Legible plate over the particle field */
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
-/* ── Social links ───────────────────────────────────────────── */
-.social-links {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+.releases-heading {
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-muted);
+    padding: 1.5rem 0.25rem 1rem;
+}
+
+.media-list {
+    border-top: 1px solid var(--rule);
+}
+
+.media-row {
+    border-bottom: 1px solid var(--rule);
+}
+
+/* ── Trigger (the expanding link) ───────────────────────────── */
+.media-trigger {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2.75rem 1fr auto 1.25rem;
+    align-items: baseline;
+    gap: 0.75rem;
+
+    padding: 1.05rem 0.25rem;
+    background: none;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'OpenSauceSans', sans-serif;
+    color: var(--fg);
+    transition: opacity 0.25s ease;
+}
+
+.media-trigger:hover  { opacity: 0.55; }
+.media-trigger:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+}
+
+.media-index {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.media-title {
+    font-size: clamp(1rem, 2.6vw, 1.5rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+
+.media-meta {
     display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    font-size: 0.66rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    white-space: nowrap;
+}
+
+.media-source {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+}
+
+/* Row currently driving the audio-reactive visuals */
+.media-row.is-playing .media-source {
+    border-color: var(--fg);
+    color: var(--fg);
+}
+
+/* Chevron: rotates a quarter turn when the row opens */
+.media-chevron {
+    align-self: center;
+    justify-self: end;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-right: 1.5px solid var(--fg);
+    border-bottom: 1.5px solid var(--fg);
+    transform: rotate(45deg);
+    transition: transform 0.35s var(--ease);
+}
+
+.media-row.is-open .media-chevron {
+    transform: rotate(-135deg);
+}
+
+/* ── Panel ──────────────────────────────────────────────────── */
+/* 0fr → 1fr animates to the content's natural height. */
+.media-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s var(--ease);
+}
+
+.media-row.is-open .media-panel {
+    grid-template-rows: 1fr;
+}
+
+.media-panel-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.media-frame-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+}
+
+/* Shorts are 9:16 — keep them column-width, not page-width */
+.media-row--short .media-frame-box {
+    aspect-ratio: 9 / 16;
+    width: min(100%, 330px);
+    margin-inline: auto;
+}
+
+/* SoundCloud's compact player has a fixed height, not a ratio */
+.media-row--sc .media-frame-box {
+    aspect-ratio: auto;
+    height: 166px;
+    background: transparent;
+    border: 0;
+}
+
+.media-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.media-permalink {
+    display: inline-block;
+    margin: 0.7rem 0.25rem 1.25rem;
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--fg-muted);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.media-permalink:hover { color: var(--fg); }
+
+/* ── Footer / social links ──────────────────────────────────── */
+.site-footer {
+    position: relative;
+    z-index: 20;
+    padding: 2rem 1rem calc(env(safe-area-inset-bottom) + 2.5rem);
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 2rem;
-    z-index: 50;
 }
 
 .social-links a {
@@ -207,35 +322,42 @@ body.video-active h1#mainText {
     transition: opacity 0.25s ease;
 }
 
-.social-links a:hover {
-    opacity: 1;
-}
+.social-links a:hover { opacity: 1; }
 
 /* ── Mobile ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
-    .content-wrapper {
-        padding-top: calc(env(safe-area-inset-top) + 1rem);
-        padding-bottom: calc(env(safe-area-inset-bottom) + 6rem);
-        padding-left: 0;
-        padding-right: 0;
+    .releases {
+        width: 100%;
+        padding-inline: 1rem;
     }
 
-    .text-container {
-        width: 100vw;
-        max-width: 100vw;
-        min-height: min(82vw, 22rem);
+    .media-trigger {
+        grid-template-columns: 2rem 1fr 1rem;
+        row-gap: 0.35rem;
+        padding: 0.95rem 0;
     }
 
-    .video-embed {
-        width: min(calc(100vw - 1.5rem), 560px);
-        transform: none;
+    /* Meta drops to its own line under the title */
+    .media-meta {
+        grid-column: 2 / 3;
+        gap: 0.7rem;
     }
 
-    .video-embed.is-active {
-        transform: scale(1.01);
+    .media-chevron {
+        grid-column: 3 / 4;
+        grid-row: 1 / 2;
     }
 
-    .social-links {
-        gap: 1.25rem;
+    .social-links { gap: 1.25rem; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    .media-panel,
+    .media-chevron,
+    .media-trigger {
+        transition-duration: 0.01ms;
     }
 }
