@@ -93,10 +93,15 @@ body {
 #ghostCanvas    { z-index: 2; }
 
 /* ── Hero ───────────────────────────────────────────────────── */
+/* Deliberately NOT 100svh. A full-height hero puts the release list
+   exactly on the fold, and since this page never used to scroll there
+   is nothing to tell a visitor the embeds are down there — they just
+   look missing. Landing with the first row already open and visible is
+   the whole affordance. */
 .hero {
     position: relative;
     z-index: 10;
-    min-height: 100svh;
+    min-height: max(56svh, 18rem);
     display: grid;
     place-items: center;
     padding: 1rem;
