@@ -1,10 +1,10 @@
 /* ============================================================
    SocialLink.jsx
-   A footer link drawn by TechText. Mounted inside the real <a>
+   A footer link drawn by WarpText. Mounted inside the real <a>
    (which keeps href, aria-label and focus), so this only sizes
    a box and draws the label.
 
-   TechText shrinks its text to fit the box. Equal-width boxes
+   WarpText shrinks its text to fit the box. Equal-width boxes
    would draw "x" huge and "soundcloud" tiny, so each box is
    measured from its own text: every label then renders at the
    same size.
@@ -12,12 +12,12 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
-import TechText from '../TechText/TechText';
+import WarpText from '../WarpText/WarpText';
 import { usePalette } from '../../theme';
 
 const FAMILY = 'OpenSauceSans';
-const WEIGHT = 900;
-const SPACING = 0.11; // em, as TechText's letterSpacing
+const WEIGHT = 800;
+const SPACING = -0.03; // em
 
 const phone = window.matchMedia('(max-width: 767px)');
 const subscribe = cb => {
@@ -36,7 +36,7 @@ function measure(text, size) {
 
 export default function SocialLink({ label }) {
     const p = usePalette();
-    const size = usePhone() ? 22 : 28;
+    const size = usePhone() ? 24 : 32;
     // Measure once the face is loaded; a fallback font measures wrong.
     const [fontReady, setFontReady] = useState(false);
 
@@ -49,30 +49,29 @@ export default function SocialLink({ label }) {
         };
     }, [label, size]);
 
-    // TechText fits text to 90% of the width and 66% of the height.
-    const width = Math.ceil(measure(label, size) / 0.88) + 4;
-    const height = Math.ceil(size * 2.2);
+    // WarpText fits text to 86% of the width and 78% of the height; a
+    // little extra width leaves room for the lens to bulge the edges.
+    const width = Math.ceil(measure(label, size) / 0.8) + 8;
+    const height = Math.ceil(size * 1.9);
 
     return (
         <span className="social-link__box" style={{ width, height }} data-ready={fontReady || undefined}>
-            <TechText
+            <WarpText
                 key={fontReady ? 'ready' : 'pending'}
+                {...p.warp}
                 text={label}
-                fontFamily={FAMILY}
-                fontWeight={WEIGHT}
+                warpStrength={0.12}
+                warpScale={1.9}
+                speed={0.55}
+                pointerInfluence={0.33}
+                pointerStrength={0.48}
+                refraction={0.03}
+                ripple
                 fontSize={size}
-                letterSpacing={SPACING}
-                color={p.tech.color}
-                accentColor={p.tech.accent}
-                reveal="letter"
-                dashLength={10}
-                dashGap={2}
-                strokeWidth={2.75}
-                specks={15}
-                speed={1.6}
-                labels={false}
-                draggable={false}
-                sweep={false}
+                fontWeight={WEIGHT}
+                fontFamily={FAMILY}
+                letterSpacing={`${SPACING}em`}
+                style={{ width: '100%', height: '100%', minHeight: 0 }}
             />
         </span>
     );

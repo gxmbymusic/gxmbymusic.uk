@@ -232,10 +232,9 @@ h1#mainText {
     padding: 1.5rem 0.25rem 1rem;
 }
 
-/* Once WarpText mounts, it is the heading: tighter, and its own
-   min-height (220px) gives way to the island's viewport-tied height. */
-.releases-heading:has(.warp-text) { padding: 0.5rem 0 0.25rem; }
-.releases-heading .warp-text { min-height: 0; }
+/* Once TechText mounts, it is the heading: tighter padding, height
+   set by the island (viewport-tied). */
+.releases-heading:has(.tech-text) { padding: 0.5rem 0 0.25rem; }
 
 /* ── Footer / social links ──────────────────────────────────── */
 .site-footer {
@@ -265,7 +264,7 @@ h1#mainText {
 
 .social-links a:hover { opacity: 1; }
 
-/* TechText-drawn links: the box is sized per label by SocialLink.jsx */
+/* WarpText-drawn links: the box is sized per label by SocialLink.jsx */
 .social-links a[data-tech] {
     display: inline-flex;
     opacity: 0.7;

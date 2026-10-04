@@ -19,14 +19,14 @@ import MoltenMetal from './components/MoltenMetal/MoltenMetal';
 import DitherVeil from './components/DitherVeil/DitherVeil';
 import DepthText from './components/DepthText/DepthText';
 import MusicPlayer from './components/MusicPlayer/MusicPlayer';
-import WarpText from './components/WarpText/WarpText';
+import TechText from './components/TechText/TechText';
 import SocialLink from './components/SocialLink/SocialLink';
 
 // Canvas/WebGL text only waits for fonts the page has already asked
-// for; request these weights up front so WarpText and TechText don't
+// for; request these weights up front so TechText and WarpText don't
 // rasterise in a fallback face.
-document.fonts?.load('800 64px OpenSauceSans', 'RELEASES');
-document.fonts?.load('900 64px OpenSauceSans');
+document.fonts?.load('900 64px OpenSauceSans', 'RELEASES');
+document.fonts?.load('800 64px OpenSauceSans');
 
 // Read once: the components that honour it do so internally too,
 // these props cover the ones that don't.
@@ -102,31 +102,31 @@ function Wordmark() {
 }
 
 // Section title. Mounted inside the h2, whose accessible name then
-// comes from WarpText's role="img" aria-label. Height is tied to the
+// comes from TechText's role="img" aria-label. Height is tied to the
 // viewport so the first release stays above the fold (layout.test.js).
 function ReleasesTitle() {
     const p = usePalette();
     return (
-        <WarpText
-            {...p.warp}
+        <TechText
             text="RELEASES"
-            warpStrength={0.12}
-            warpScale={1.9}
-            speed={0.55}
-            pointerInfluence={0.33}
-            pointerStrength={0.48}
-            refraction={0.03}
-            ripple
-            fontSize="clamp(3rem, 10vw, 9rem)"
-            fontWeight={800}
             fontFamily="OpenSauceSans"
-            letterSpacing="-0.03em"
+            fontWeight={900}
+            fontSize={180}
+            letterSpacing={0.11}
+            color={p.tech.color}
+            accentColor={p.tech.accent}
+            reveal="letter"
+            dashLength={10}
+            dashGap={2}
+            strokeWidth={2.75}
+            specks={15}
+            speed={1.6}
             style={{ height: 'clamp(64px, min(14vw, 12svh), 140px)' }}
         />
     );
 }
 
-// Footer links: the <a> stays real; TechText draws its label.
+// Footer links: the <a> stays real; WarpText draws its label.
 const FooterLink = ({ el }) => <SocialLink label={el.dataset.tech} />;
 
 const ISLANDS = [

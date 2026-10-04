@@ -86,8 +86,10 @@ The 21st.dev brief is a Beyoncé demo. It asks for TypeScript, Tailwind 4 and sh
 
 #### Step 5 as built
 
-- **WarpText** mounts inside `h2#releasesTitle`. The h2 keeps the class `.releases-heading` the tests rely on, and "Releases" stays as the no-JS fallback. Height is `clamp(64px, min(14vw, 12svh), 140px)`: the plan's `14vw` alone pushed the first release below the fold on the 1366×640 laptop. `letterSpacing` is `"-0.03em"`; the brief's bare `-0.03` means px, which is effectively zero.
-- **TechText** links are a site wrapper, `src/components/SocialLink`, mounted inside each real `<a data-tech>`. Each box is measured from its own label, so all four render at one size (28px, 22px on phones); TechText otherwise shrinks text to fit a fixed box. `labels={false}`: the frame label is drawn above the frame and was clipped in boxes this small.
+> **Swapped after step 5 (user request):** the RELEASES heading uses **TechText** and the footer links use **WarpText**, the reverse of the table above. The notes below describe the swapped build. Cost: four extra WebGL contexts (six in all), and the footer-in-view frame rate in software rendering fell from 24.8 to 15.4 fps.
+
+- **TechText heading** mounts inside `h2#releasesTitle`. The h2 keeps the class `.releases-heading` the tests rely on, and "Releases" stays as the no-JS fallback. Height is `clamp(64px, min(14vw, 12svh), 140px)`: `14vw` alone pushed the first release below the fold on the 1366×640 laptop. Brief props otherwise, including drag and idle sweep (it isn't a link, so dragging is harmless).
+- **WarpText links** come from a site wrapper, `src/components/SocialLink`, mounted inside each real `<a data-tech>`. Each box is measured from its own label, so all four render at one size (32px, 24px on phones); WarpText otherwise shrinks text to fit a fixed box. `letterSpacing` is `"-0.03em"`; the brief's bare `-0.03` means px, which is effectively zero.
 - **Fonts:** `islands.jsx` requests OpenSauceSans 800/900 up front. Canvas text only waits for faces the page has already asked for.
 - **The releases plate is gone.** The player card has its own surface, and the full-width glass panel only drew hard edges across the hero fade and above the footer.
 
