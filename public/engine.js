@@ -64,9 +64,10 @@
       // Route hidden audio through analyser but NOT to speakers
       sourceNode = audioCtx.createMediaElementSource(syncAudio);
       sourceNode.connect(analyser);
-      // Intentionally NOT connecting to destination — stays silent
+      // Intentionally NOT connecting to destination — stays silent.
+      // Leave the element's volume at 1: once routed here it applies
+      // *before* the analyser, so volume 0 fed it pure silence.
 
-      syncAudio.volume = 0;
       audioReady = true;
       console.log("[engine] AudioContext created, state:", audioCtx.state);
     } catch (e) {
@@ -92,7 +93,9 @@
       });
     }
 
-    if (playing) {
+    // Only play once routed into the (silent) graph — unrouted, the
+    // element would be audible under the YouTube embed.
+    if (playing && audioReady) {
       try {
         syncAudio.currentTime = currentTime;
         syncAudio
