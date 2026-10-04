@@ -32,6 +32,11 @@ document.fonts?.load('800 64px OpenSauceSans');
 // these props cover the ones that don't.
 const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
+// Touch screens have no hover, so a wandering reveal would redraw the
+// hero every frame forever. There it plays its intro, then sleeps
+// until tapped (taps still send the colour ripple).
+const finePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ?? false;
+
 // Full-page background. Audio lift comes from GXMBYEngine.level().
 function Background() {
     const p = usePalette();
@@ -73,7 +78,7 @@ function HeroVeil() {
             palette="rgb"
             contrast={1.3}
             brightness={0.14}
-            wander
+            wander={finePointer}
         />
     );
 }

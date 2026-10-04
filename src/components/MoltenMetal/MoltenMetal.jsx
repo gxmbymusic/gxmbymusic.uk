@@ -160,7 +160,9 @@ const MoltenMetal = ({
       alpha: true,
       premultipliedAlpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      // gxmby: 1x on every screen. A soft glow looks the same, at a
+      // quarter of the pixels of 2x (it covers the whole viewport).
+      dpr: 1
     });
 
     const gl = renderer.gl;

@@ -225,7 +225,12 @@ const WarpText = ({
   letterSpacing = '-0.06em',
   lineHeight = 0.9,
   className = '',
-  style
+  style,
+  // gxmby: hoverOnly redraws only while the pointer is over it (or
+  // `engaged` is set, e.g. its link has focus), then settles flat and
+  // stops. Used by the footer links so idle text costs nothing.
+  hoverOnly = false,
+  engaged = false
 }) => {
   const containerRef = useRef(null);
   const propsRef = useRef({
@@ -242,7 +247,9 @@ const WarpText = ({
     pointerInfluence,
     pointerStrength,
     refraction,
-    ripple
+    ripple,
+    hoverOnly,
+    engaged
   });
   const contextRef = useRef(null);
 
@@ -261,12 +268,15 @@ const WarpText = ({
       pointerInfluence,
       pointerStrength,
       refraction,
-      ripple
+      ripple,
+      hoverOnly,
+      engaged
     };
 
     if (contextRef.current) {
       syncUniforms(contextRef.current.program, propsRef.current);
       contextRef.current.rasterize();
+      contextRef.current.wake(); // gxmby: `engaged` may have changed
     }
   }, [
     text,
@@ -282,7 +292,9 @@ const WarpText = ({
     pointerInfluence,
     pointerStrength,
     refraction,
-    ripple
+    ripple,
+    hoverOnly,
+    engaged
   ]);
 
   useEffect(() => {
@@ -306,7 +318,6 @@ const WarpText = ({
     let rasterVersion = 0;
 
     const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, active: 0, activeTarget: 0 };
-    const startTime = performance.now();
 
     try {
       renderer = new Renderer({
@@ -416,6 +427,7 @@ const WarpText = ({
       pointer.tx = (event.clientX - rect.left) / rect.width;
       pointer.ty = 1 - (event.clientY - rect.top) / rect.height;
       pointer.activeTarget = 1;
+      wake(); // gxmby: restart a settled hoverOnly loop
     };
 
     const onPointerLeave = () => {
@@ -445,19 +457,35 @@ const WarpText = ({
       renderOnce();
     };
 
+    // gxmby: wake() restarts a stopped loop; a running clock replaces
+    // wall time so a settled loop resumes without the ambient warp
+    // jumping ahead.
+    let clock = 0;
+    let lastNow = 0;
+    const wake = () => {
+      if (!raf && visible && pageVisible && !disposed && !contextLost) {
+        lastNow = 0;
+        raf = requestAnimationFrame(loop);
+      }
+    };
+
     const loop = now => {
       if (disposed || contextLost) return;
 
-      const elapsed = (now - startTime) * 0.001;
+      const { hoverOnly, engaged } = propsRef.current;
+      clock += lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0;
+      lastNow = now;
+      const elapsed = clock;
       const idleX = 0.5 + Math.sin(elapsed * 0.33) * 0.12;
       const idleY = 0.5 + Math.cos(elapsed * 0.27) * 0.1;
       const targetX = pointer.activeTarget > 0 ? pointer.tx : idleX;
       const targetY = pointer.activeTarget > 0 ? pointer.ty : idleY;
       const damping = pointer.activeTarget > 0 ? 0.12 : 0.035;
+      const live = pointer.activeTarget > 0 || engaged;
 
       pointer.x += (targetX - pointer.x) * damping;
       pointer.y += (targetY - pointer.y) * damping;
-      pointer.active += ((pointer.activeTarget > 0 ? 1 : 0.18) - pointer.active) * 0.06;
+      pointer.active += ((live ? 1 : hoverOnly ? 0 : 0.18) - pointer.active) * 0.06;
 
       program.uniforms.uPointer.value[0] = pointer.x;
       program.uniforms.uPointer.value[1] = pointer.y;
@@ -465,6 +493,11 @@ const WarpText = ({
       program.uniforms.uTime.value = reduceMotion ? 0 : elapsed;
 
       renderOnce();
+      // gxmby: a hoverOnly instance stops once its lens has faded out
+      if (hoverOnly && !live && pointer.active < 0.003) {
+        raf = 0;
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
 
@@ -491,7 +524,7 @@ const WarpText = ({
     mediaQuery?.addEventListener('change', onReducedMotion);
 
     syncUniforms(program, propsRef.current);
-    contextRef.current = { program, rasterize };
+    contextRef.current = { program, rasterize, wake };
     resize();
     raf = requestAnimationFrame(loop);
 

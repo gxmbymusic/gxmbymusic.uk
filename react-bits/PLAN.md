@@ -170,3 +170,22 @@ scripts/extract-react-bits.mjs            copies the "Full Component Source" / "
   - Playwright on `dist/`: opening a release mounts exactly one iframe, opening another keeps one modal open, the dial has `role="slider"` and the right `aria-valuenow`, and the links are real `<a href>` elements.
 - **Reduced motion** (emulated in Playwright): Molten is static, the veil doesn't wander, and nothing throws.
 - **Performance check:** 3 WebGL contexts (Molten, Veil, Warp). Profile on a mid-range phone viewport. If frame rate sags, drop Molten's DPR to 1.
+
+## Performance (step 6, measured 2026-10-04)
+
+Phone viewport 393×852 @3x, headless Chromium with software WebGL. That exaggerates GPU cost, but the ratios hold. Knockout ranking (frame time): DitherVeil ~49 ms > MoltenMetal ~34 ms > WarpText ≈ 0; page JavaScript is negligible.
+
+Changes, all chosen by the user:
+
+| Change | Where |
+|---|---|
+| MoltenMetal renders at 1× on every screen (a soft glow; quarter of the 2× pixels) | `MoltenMetal.jsx`, marked `gxmby:` |
+| DitherVeil `wander` only with a fine pointer; touch screens play the intro, then sleep until tapped | `islands.jsx` |
+| Footer WarpText links redraw only while hovered or keyboard-focused, then fade flat and stop (`hoverOnly` / `engaged` props) | `WarpText.jsx`, marked `gxmby:`; `SocialLink.jsx` |
+
+| | Top | Mid-page | Footer |
+|---|---|---|---|
+| Before | 10.9 fps | 19.9 fps | 19.6 fps |
+| After | 60.3 fps | 60.3 fps | 60 fps |
+
+Hero draws in 3 s on a touch screen after the intro: 68 → 0. Idle footer links: 0 draws.

@@ -7,10 +7,10 @@
    WarpText shrinks its text to fit the box. Equal-width boxes
    would draw "x" huge and "soundcloud" tiny, so each box is
    measured from its own text: every label then renders at the
-   same size.
+   same size. Idle links don't animate (WarpText hoverOnly).
    ============================================================ */
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import WarpText from '../WarpText/WarpText';
 import { usePalette } from '../../theme';
@@ -39,6 +39,22 @@ export default function SocialLink({ label }) {
     const size = usePhone() ? 24 : 32;
     // Measure once the face is loaded; a fallback font measures wrong.
     const [fontReady, setFontReady] = useState(false);
+    // Keyboard focus on the link animates it like a hover would.
+    const boxRef = useRef(null);
+    const [focused, setFocused] = useState(false);
+
+    useEffect(() => {
+        const link = boxRef.current?.closest('a');
+        if (!link) return undefined;
+        const on = () => setFocused(link.matches(':focus-visible'));
+        const off = () => setFocused(false);
+        link.addEventListener('focus', on);
+        link.addEventListener('blur', off);
+        return () => {
+            link.removeEventListener('focus', on);
+            link.removeEventListener('blur', off);
+        };
+    }, []);
 
     useEffect(() => {
         let live = true;
@@ -55,7 +71,7 @@ export default function SocialLink({ label }) {
     const height = Math.ceil(size * 1.9);
 
     return (
-        <span className="social-link__box" style={{ width, height }} data-ready={fontReady || undefined}>
+        <span ref={boxRef} className="social-link__box" style={{ width, height }} data-ready={fontReady || undefined}>
             <WarpText
                 key={fontReady ? 'ready' : 'pending'}
                 {...p.warp}
@@ -67,6 +83,8 @@ export default function SocialLink({ label }) {
                 pointerStrength={0.48}
                 refraction={0.03}
                 ripple
+                hoverOnly
+                engaged={focused}
                 fontSize={size}
                 fontWeight={WEIGHT}
                 fontFamily={FAMILY}
