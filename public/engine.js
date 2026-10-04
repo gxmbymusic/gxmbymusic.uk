@@ -217,10 +217,11 @@
       gCtx.translate(cx, cy);
       gCtx.scale(scale, scale);
       gCtx.globalAlpha = alpha;
-      gCtx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`;
+      // Matches the DepthText wordmark (OpenSauceSans 900, -0.065em)
+      gCtx.font = `900 ${fontSize}px 'OpenSauceSans', sans-serif`;
       gCtx.textAlign = "center";
       gCtx.textBaseline = "middle";
-      gCtx.letterSpacing = "-0.2em";
+      gCtx.letterSpacing = "-0.065em";
       gCtx.fillStyle = `${e.color}1)`;
       gCtx.fillText("GXMBY", 0, 0);
       gCtx.restore();
@@ -241,7 +242,6 @@
     const scale = 1 + e * 0.09 + p * 0.07;
     const rotation = (p - 0.5) * 3.5 * a;
     const skew = (peak - 0.5) * 5 * a;
-    const glow = 6 + e * 22 + p * 18;
     const brightness = 1 + e * 0.14;
     const hue = p * 14 * a;
     const letterSpacing = -0.2 + e * 0.1 + p * 0.06;
@@ -252,7 +252,6 @@
     mainText.style.transform = `scale(${scale}) rotate(${rotation}deg) skewX(${skew}deg)`;
     mainText.style.opacity = opacity;
     mainText.style.filter = `brightness(${brightness}) hue-rotate(${hue}deg)`;
-    mainText.style.textShadow = `0 0 ${glow}px rgba(0,0,0,0.22)`;
     mainText.style.letterSpacing = `${letterSpacing}em`;
   }
 

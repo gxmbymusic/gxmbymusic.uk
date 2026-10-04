@@ -69,6 +69,17 @@
     color-scheme: dark;
 }
 
+/* Light: the site's original palette. data-theme is set by theme.js
+   before first paint; component colours live in src/theme.js. */
+:root[data-theme="light"] {
+    --bg: #ffffff;
+    --fg: #000000;
+    --fg-muted: rgba(0, 0, 0, 0.5);
+    --rule: rgba(0, 0, 0, 0.14);
+    --plate: rgba(255, 255, 255, 0.86);
+    color-scheme: light;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -96,6 +107,57 @@ body {
 #bg          { z-index: 0; }
 #ghostCanvas { z-index: 2; pointer-events: none; }
 
+/* ── Theme toggle ───────────────────────────────────────────── */
+.theme-toggle {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 0.9rem);
+    right: calc(env(safe-area-inset-right) + 0.9rem);
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: var(--plate);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--fg);
+    cursor: pointer;
+    transition: border-color 0.25s ease;
+}
+
+.theme-toggle:hover { border-color: var(--fg-muted); }
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+}
+
+.theme-toggle svg {
+    grid-area: 1 / 1;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.3s ease, transform 0.45s var(--ease);
+}
+
+/* Shows the theme you'd switch TO: sun on dark, moon on light */
+.theme-toggle__moon,
+:root[data-theme="light"] .theme-toggle__sun {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.6);
+}
+
+:root[data-theme="light"] .theme-toggle__moon {
+    opacity: 1;
+    transform: none;
+}
+
 /* ── Hero ───────────────────────────────────────────────────── */
 /* Deliberately NOT 100svh. A full-height hero puts the release list
    exactly on the fold, and since this page never used to scroll there
@@ -109,21 +171,37 @@ body {
     display: grid;
     place-items: center;
     padding: 1rem;
-    pointer-events: none;
 }
 
+/* DitherVeil fills the hero and takes the pointer; its lower edge
+   fades out so the image melts into the background. */
+#heroVeil {
+    position: absolute;
+    inset: 0;
+    /* DitherVeil dots its first pixel column; push it off-screen */
+    left: -2px;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+
+/* Holds the DepthText island. The font-size here IS the wordmark
+   size (DepthText gets fontSize="1em"), and engine.js reads it to
+   size the echoes. Letter-spacing/colour are DepthText's own. */
 h1#mainText {
-    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
-    font-size: clamp(3rem, 28vw, 25rem);
+    position: relative;
+    z-index: 1;
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(3.5rem, 15vw, 8.5rem);
     font-weight: 900;
-    line-height: 0.85;
-    letter-spacing: -0.2em;
+    line-height: 0.86;
     text-align: center;
-    text-transform: uppercase;
     color: var(--fg);
 
     user-select: none;
     cursor: default;
+    /* Pointer passes through to the veil; DepthText tracks the
+       pointer on window, so its tilt still works. */
     pointer-events: none;
 
     /* GPU layer — JS mutates transform/opacity/filter every frame */

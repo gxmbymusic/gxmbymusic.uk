@@ -74,6 +74,13 @@ The 21st.dev brief is a Beyoncé demo. It asks for TypeScript, Tailwind 4 and sh
 - **Volume:** CometDial `onChange(v)` → `ytPlayer.setVolume(v)`, or for SoundCloud, `iframe.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:v}), '*')`. Remember the last value and apply it in the YouTube `onReady` / SoundCloud ready event when a new embed mounts. Known limitation: iOS ignores programmatic volume on embeds. There, the dial moves but the volume doesn't change. Document it; don't hack around it.
 - **Placeholders the user fills later:** bio text, artist photo, per-release `notes`, SoundCloud artwork.
 
+## Light / dark theme (added in step 3 at the user's request)
+
+- **Source of truth:** `<html data-theme="light|dark">`, set by `public/theme.js`. It loads blocking in `<head>`, so the theme is set before first paint. It follows the system preference until the visitor clicks `#themeToggle` (fixed, top right), then remembers the choice in `localStorage`, wrapped in try/catch.
+- **CSS:** dark tokens on `:root`, light tokens on `:root[data-theme="light"]`. The light palette is the site's original black-on-white.
+- **Components:** every colour that differs by theme lives in `PALETTES` in `src/theme.js`. Islands read it with `usePalette()`, which watches the attribute; islands are separate React roots, so a context wouldn't reach them. **Every later island (WarpText, TechText, CometDial, the player) gets a `light` entry there too.**
+- **Light-mode notes:** Molten Metal uses its built-in `lightMode` with a pale palette at opacity 0.7, because the dark palette turned into heavy smudges on white. DitherVeil's ink is white so its keyed backdrop blends into the page.
+
 ## Changes to existing code
 
 - **`engine.js`** (small and surgical; the sync logic stays as it is):
@@ -106,7 +113,9 @@ index.html                Vite entry (stays at root)
 public/engine.js          moved here so Vite copies the classic script as is
 public/audio/…            moved (production /audio/* is served by worker.js from R2 anyway)
 src/islands.jsx           one createRoot per slot; reads prefers-reduced-motion once
-src/config.js             HERO_IMAGE, shared colours
+src/config.js             HERO_IMAGE
+src/theme.js              useTheme / usePalette; PALETTES (all theme-dependent colours)
+public/theme.js           sets <html data-theme> before paint; wires #themeToggle
 src/catalogue.js          MEDIA + helpers moved out of media.js
 src/components/<Name>/<Name>.jsx + .css   MoltenMetal, DitherVeil, DepthText, WarpText, TechText, CometDial, MusicPlayer
 scripts/extract-react-bits.mjs            copies the "Full Component Source" / "Component CSS" fences from react-bits/*.md
