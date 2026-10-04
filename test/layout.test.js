@@ -11,11 +11,12 @@
    The load-bearing assertion is therefore that the first embed is
    actually ON SCREEN at rest, on every viewport worth caring about.
 
-   Serves the repo itself on an ephemeral port, so no external
+   Serves the built dist/ on an ephemeral port, so no external
    server is needed:
 
        npm run setup      # once: deps + chromium
-       node layout.test.js                    # local files
+       (cd .. && npm run build)               # produce dist/
+       node layout.test.js                    # local build
        node layout.test.js https://gxmbymusic.uk/   # production
    ============================================================ */
 
@@ -24,7 +25,14 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const ROOT = path.join(__dirname, '..');
+// The built site — what Cloudflare Pages actually serves. Run
+// `npm run build` in the repo root first.
+const ROOT = path.join(__dirname, '..', 'dist');
+
+if (!process.argv[2] && !fs.existsSync(path.join(ROOT, 'index.html'))) {
+    console.error('dist/ not found — run `npm run build` in the repo root first');
+    process.exit(1);
+}
 
 const TYPES = {
     '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',

@@ -3,8 +3,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const projectRoot = process.cwd();
-const inputPath = path.resolve(projectRoot, process.argv[2] || 'audio/Expressions.mp3');
-const outputPath = path.resolve(projectRoot, process.argv[3] || 'audio/Expressions-reactive.json');
+const inputPath = path.resolve(projectRoot, process.argv[2] || 'public/audio/Expressions.mp3');
+const outputPath = path.resolve(projectRoot, process.argv[3] || 'public/audio/Expressions-reactive.json');
 const sampleRate = 11025;
 const fps = 24;
 

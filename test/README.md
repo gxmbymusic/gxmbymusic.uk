@@ -1,6 +1,7 @@
 # Tests
 
 ```sh
+npm install && npm run build   # in the repo root — layout.test.js tests dist/
 cd test
 npm run setup   # once — installs deps + Chromium
 npm test
@@ -20,8 +21,9 @@ with no scroll affordance the page read as empty. Every embed was correct and
 layout**. Anything about position, size or visibility has to be asserted in a
 real browser, which is what `layout.test.js` is for.
 
-`layout.test.js` serves the repo on an ephemeral port, so it needs no running
-server. Point it at production instead by passing a URL:
+`layout.test.js` serves the built `dist/` on an ephemeral port, so it needs no
+running server — but it does need a fresh `npm run build`, or it tests stale
+output. Point it at production instead by passing a URL:
 
 ```sh
 node layout.test.js https://gxmbymusic.uk/
@@ -29,7 +31,7 @@ node layout.test.js https://gxmbymusic.uk/
 
 ## Updating the catalogue
 
-The release list lives in `MEDIA` at the top of `../media.js`. Two rules govern
+The release list lives in `MEDIA` at the top of `../public/media.js`. Two rules govern
 it, both asserted by `accordion.test.js`: named uploads only, and YouTube wins
 where a release exists on both platforms. Adding an entry means updating the
 counts in that file (`12 rows`, `9 youtube + 3 soundcloud`).

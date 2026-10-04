@@ -80,8 +80,12 @@
             crossorigin="anonymous"
         ></audio>
 
-        <script src="particles.js"></script>
-        <script src="engine.js"></script>
-        <script src="media.js"></script>
+        <!-- Classic scripts, served as-is from public/ -->
+        <script src="/particles.js"></script>
+        <script src="/engine.js"></script>
+        <script src="/media.js"></script>
+
+        <!-- React islands (bundled by Vite; modules run after the above) -->
+        <script type="module" src="/src/islands.jsx"></script>
     </body>
 </html>
