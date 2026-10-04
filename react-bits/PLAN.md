@@ -84,6 +84,13 @@ The 21st.dev brief is a Beyoncé demo. It asks for TypeScript, Tailwind 4 and sh
 - **Bio** is `ARTIST_BIO` in `src/config.js`, a placeholder ("Music by GXMBY.", the existing og:description).
 - **Tests moved here from step 6,** so every commit stays green: `catalogue.test.mjs` (Node), `player.test.js` (Chromium, offline), `layout.test.js` (now asserts the artwork and the whole first row are above the fold). `accordion.test.js` is retired.
 
+#### Step 5 as built
+
+- **WarpText** mounts inside `h2#releasesTitle`. The h2 keeps the class `.releases-heading` the tests rely on, and "Releases" stays as the no-JS fallback. Height is `clamp(64px, min(14vw, 12svh), 140px)`: the plan's `14vw` alone pushed the first release below the fold on the 1366×640 laptop. `letterSpacing` is `"-0.03em"`; the brief's bare `-0.03` means px, which is effectively zero.
+- **TechText** links are a site wrapper, `src/components/SocialLink`, mounted inside each real `<a data-tech>`. Each box is measured from its own label, so all four render at one size (28px, 22px on phones); TechText otherwise shrinks text to fit a fixed box. `labels={false}`: the frame label is drawn above the frame and was clipped in boxes this small.
+- **Fonts:** `islands.jsx` requests OpenSauceSans 800/900 up front. Canvas text only waits for faces the page has already asked for.
+- **The releases plate is gone.** The player card has its own surface, and the full-width glass panel only drew hard edges across the hero fade and above the footer.
+
 ## Light / dark theme (added in step 3 at the user's request)
 
 - **Source of truth:** `<html data-theme="light|dark">`, set by `public/theme.js`. It loads blocking in `<head>`, so the theme is set before first paint. It follows the system preference until the visitor clicks `#themeToggle` (fixed, top right), then remembers the choice in `localStorage`, wrapped in try/catch.

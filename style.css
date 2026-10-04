@@ -217,10 +217,9 @@ h1#mainText {
     margin: 0 auto;
     padding-bottom: 4rem;
 
-    /* Legible plate over the background */
-    background: var(--plate);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    /* No plate: the player card carries its own surface, and the old
+       full-width glass panel only drew hard edges across the hero's
+       fade and above the footer. */
 }
 
 .releases-heading {
@@ -232,6 +231,11 @@ h1#mainText {
     color: var(--fg-muted);
     padding: 1.5rem 0.25rem 1rem;
 }
+
+/* Once WarpText mounts, it is the heading: tighter, and its own
+   min-height (220px) gives way to the island's viewport-tied height. */
+.releases-heading:has(.warp-text) { padding: 0.5rem 0 0.25rem; }
+.releases-heading .warp-text { min-height: 0; }
 
 /* ── Footer / social links ──────────────────────────────────── */
 .site-footer {
@@ -261,6 +265,23 @@ h1#mainText {
 
 .social-links a:hover { opacity: 1; }
 
+/* TechText-drawn links: the box is sized per label by SocialLink.jsx */
+.social-links a[data-tech] {
+    display: inline-flex;
+    opacity: 0.7;
+    border-radius: 6px;
+}
+
+.social-links a[data-tech]:hover,
+.social-links a[data-tech]:focus-visible { opacity: 1; }
+
+.social-links a:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 4px;
+}
+
+.social-link__box { display: block; }
+
 /* ── Mobile ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
     .releases {
@@ -268,7 +289,7 @@ h1#mainText {
         padding-inline: 1rem;
     }
 
-    .social-links { gap: 1.25rem; }
+    .social-links { gap: 0.5rem 1.25rem; }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────── */

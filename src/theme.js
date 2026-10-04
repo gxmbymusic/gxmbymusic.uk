@@ -28,7 +28,9 @@ export const PALETTES = {
         molten: { color1: '#5227FF', color2: '#d3e45a', color3: '#FFFFFF', lightMode: false, opacity: 1.0 },
         veil: { inkColor: '#120f17', paperColor: '#3B82F6', rimColor: '#9c8ccc' },
         depth: { faceColor: '#f8fafc', depthColor: '#3B82F6' },
-        dial: { accent: '#f5f5f5', ink: '#fdfdfd' }
+        dial: { accent: '#f5f5f5', ink: '#fdfdfd' },
+        warp: { color: '#f8f5ff' },
+        tech: { color: '#ffffff', accent: '#ffffff' }
     },
     light: {
         bg: '#ffffff',
@@ -36,7 +38,9 @@ export const PALETTES = {
         molten: { color1: '#e4e0ff', color2: '#8f7bff', color3: '#5227FF', lightMode: true, opacity: 0.7 },
         veil: { inkColor: '#ffffff', paperColor: '#3B82F6', rimColor: '#5227FF' },
         depth: { faceColor: '#0b0a0f', depthColor: '#3B82F6' },
-        dial: { accent: '#0b0a0f', ink: '#0b0a0f' }
+        dial: { accent: '#0b0a0f', ink: '#0b0a0f' },
+        warp: { color: '#0b0a0f' },
+        tech: { color: '#0b0a0f', accent: '#3B82F6' }
     }
 };
 

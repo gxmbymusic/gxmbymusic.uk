@@ -19,6 +19,14 @@ import MoltenMetal from './components/MoltenMetal/MoltenMetal';
 import DitherVeil from './components/DitherVeil/DitherVeil';
 import DepthText from './components/DepthText/DepthText';
 import MusicPlayer from './components/MusicPlayer/MusicPlayer';
+import WarpText from './components/WarpText/WarpText';
+import SocialLink from './components/SocialLink/SocialLink';
+
+// Canvas/WebGL text only waits for fonts the page has already asked
+// for; request these weights up front so WarpText and TechText don't
+// rasterise in a fallback face.
+document.fonts?.load('800 64px OpenSauceSans', 'RELEASES');
+document.fonts?.load('900 64px OpenSauceSans');
 
 // Read once: the components that honour it do so internally too,
 // these props cover the ones that don't.
@@ -93,14 +101,44 @@ function Wordmark() {
     );
 }
 
+// Section title. Mounted inside the h2, whose accessible name then
+// comes from WarpText's role="img" aria-label. Height is tied to the
+// viewport so the first release stays above the fold (layout.test.js).
+function ReleasesTitle() {
+    const p = usePalette();
+    return (
+        <WarpText
+            {...p.warp}
+            text="RELEASES"
+            warpStrength={0.12}
+            warpScale={1.9}
+            speed={0.55}
+            pointerInfluence={0.33}
+            pointerStrength={0.48}
+            refraction={0.03}
+            ripple
+            fontSize="clamp(3rem, 10vw, 9rem)"
+            fontWeight={800}
+            fontFamily="OpenSauceSans"
+            letterSpacing="-0.03em"
+            style={{ height: 'clamp(64px, min(14vw, 12svh), 140px)' }}
+        />
+    );
+}
+
+// Footer links: the <a> stays real; TechText draws its label.
+const FooterLink = ({ el }) => <SocialLink label={el.dataset.tech} />;
+
 const ISLANDS = [
     ['#bg', Background],
     ['#heroVeil', HeroVeil],
     ['#mainText', Wordmark],
     // Release browser: replaces the accordion (media.js, now _retired/)
-    ['#player', MusicPlayer]
+    ['#player', MusicPlayer],
+    ['#releasesTitle', ReleasesTitle],
+    ['.social-links a[data-tech]', FooterLink]
 ];
 
 for (const [selector, Island] of ISLANDS) {
-    document.querySelectorAll(selector).forEach(el => createRoot(el).render(<Island />));
+    document.querySelectorAll(selector).forEach(el => createRoot(el).render(<Island el={el} />));
 }

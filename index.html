@@ -51,7 +51,8 @@
 
         <!-- ── Releases ─────────────────────────────────────── -->
         <main class="releases">
-            <h2 class="releases-heading">Releases</h2>
+            <!-- WarpText island; "Releases" is the no-JS fallback -->
+            <h2 id="releasesTitle" class="releases-heading">Releases</h2>
 
             <!-- MusicPlayer island: built from src/catalogue.js -->
             <div id="player"></div>
@@ -63,24 +64,32 @@
                     href="https://instagram.com/gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="instagram"
+                    data-tech="instagram"
                     >instagram</a
                 >
                 <a
                     href="https://x.com/gxmbysk"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="x"
+                    data-tech="x"
                     >x</a
                 >
                 <a
                     href="https://youtube.com/@gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="youtube"
+                    data-tech="youtube"
                     >youtube</a
                 >
                 <a
                     href="https://soundcloud.com/gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="soundcloud"
+                    data-tech="soundcloud"
                     >soundcloud</a
                 >
             </nav>
