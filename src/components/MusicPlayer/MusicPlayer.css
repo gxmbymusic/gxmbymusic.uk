@@ -1,0 +1,771 @@
+/* ============================================================
+   MusicPlayer.css
+   From "Progressive Blur Modal" by Kiran Patel
+   (codepen.io/kiranpate1/pen/wBwbRBq), as modified in the user's
+   fork codepen.io/dariusatsudev/pen/QwpqXoN:
+     - .main-content and the song modal's info scroll
+       (overflow: scroll) instead of clipping;
+     - the song modal's bottom-anchored 800px blur is gone (the
+       fork's selector became invalid, so browsers dropped it),
+       leaving the full-cover radial blur.
+
+   Changes for this site:
+     - everything scoped under .gx-player (the pen's .modal,
+       .content, .song, .bold… are generic names);
+     - pen colours → --p-* tokens, with a light theme;
+     - OpenSauceSans instead of Hanken Grotesk;
+     - card height fits the page, not 100vh;
+     - the song modal grows to fill the card from its row
+       (--rise), not to a fixed 400px;
+     - embeds, the volume dial, phone layout, reduced motion.
+   ============================================================ */
+
+.gx-player {
+    --p-card: #161616;
+    --p-card-active: #0f0f0f;
+    --p-border: #232120;
+    --p-glow: rgba(52, 46, 45, 1);
+    --p-glow-active: rgba(52, 46, 45, 0.7);
+    --p-modal: #272322;
+    --p-modal-hover: #342e2d;
+    --p-text: #ffffff;
+    --p-bold: rgba(255, 255, 255, 0.65);
+    --p-light: rgba(255, 255, 255, 0.45);
+    --p-line: rgba(255, 255, 255, 0.04);
+    --p-hover: rgba(255, 255, 255, 0.075);
+    --p-divider: rgba(255, 255, 255, 0.19);
+    --p-toggle: rgba(255, 255, 255, 0.05);
+    --p-toggle-hover: rgba(255, 255, 255, 0.1);
+    --p-dot: #ec66c6;
+    --p-ease: cubic-bezier(0.17, 1, 0.33, 1);
+
+    position: relative;
+    width: 100%;
+    font-family: 'OpenSauceSans', sans-serif;
+}
+
+:root[data-theme="light"] .gx-player {
+    --p-card: #f6f5f4;
+    --p-card-active: #efeeec;
+    --p-border: #e6e3e1;
+    --p-glow: rgba(214, 208, 204, 0.9);
+    --p-glow-active: rgba(214, 208, 204, 0.6);
+    --p-modal: #ebe7e4;
+    --p-modal-hover: #e0dbd7;
+    --p-text: #0b0a0f;
+    --p-bold: rgba(11, 10, 15, 0.75);
+    --p-light: rgba(11, 10, 15, 0.5);
+    --p-line: rgba(0, 0, 0, 0.06);
+    --p-hover: rgba(0, 0, 0, 0.05);
+    --p-divider: rgba(0, 0, 0, 0.19);
+    --p-toggle: rgba(0, 0, 0, 0.05);
+    --p-toggle-hover: rgba(0, 0, 0, 0.1);
+}
+
+/* Hidden scrollbars, as in the pen */
+.gx-player * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    text-rendering: geometricPrecision;
+}
+.gx-player *::-webkit-scrollbar { display: none; }
+
+/* ── Type ───────────────────────────────────────────────────── */
+.gx-player h3,
+.gx-player p,
+.gx-player .bold,
+.gx-player .light {
+    font-style: normal;
+    color: var(--p-text);
+}
+
+.gx-player h3 {
+    font-size: 40px;
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+}
+
+.gx-player p,
+.gx-player .bold,
+.gx-player .light {
+    font-size: 16px;
+    line-height: 140%;
+}
+
+.gx-player .bold {
+    font-weight: 400;
+    color: var(--p-bold);
+}
+
+.gx-player .light {
+    font-weight: 400;
+    color: var(--p-light);
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.gx-player .content {
+    position: relative;
+    width: 100%;
+    height: clamp(520px, 84svh, 860px);
+    background: var(--p-card);
+    box-shadow: inset 0 0 150px var(--p-glow);
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    gap: 16px;
+    transform: translate3d(0, 0, 0);
+    border-radius: 50px;
+    border: 2px solid var(--p-border);
+    will-change: box-shadow;
+    transition: 1s var(--p-ease);
+}
+
+.gx-player .content.active {
+    box-shadow: inset 0 0 150px var(--p-glow-active);
+    background: var(--p-card-active);
+}
+
+.gx-player .main-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 48px;
+    overflow: scroll;
+    /* Two columns (site change): the pen's photo-on-top layout put the
+       first release below the fold at every size. Phones override this
+       with a small cover beside the title. */
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px) brightness(1);
+    will-change: transform, filter;
+    transition: 0.6s var(--p-ease);
+}
+
+.gx-player .content.active .main-content {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    overflow: scroll;
+    filter: blur(16px) brightness(0.7);
+    transition: 0.3s ease-out;
+}
+
+.gx-player .photo-wrapper {
+    position: relative;
+    width: auto;
+    aspect-ratio: 1;
+}
+
+/* The main artwork stays in view while the list scrolls */
+.gx-player .main-content > .photo-wrapper {
+    position: sticky;
+    top: 32px;
+    margin: 32px 0 32px 32px;
+}
+
+.gx-player .photo {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    background: var(--p-card);
+    border-radius: 44px;
+}
+
+/* Blurred copy behind the artwork: the glow */
+.gx-player .photo--glow {
+    z-index: auto;
+    filter: brightness(1.5) saturate(1) blur(48px);
+}
+
+.gx-player .main-info {
+    position: relative;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    flex-flow: column;
+    gap: 32px;
+    padding: 32px;
+}
+
+.gx-player .title-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.gx-player .title-info {
+    display: flex;
+    gap: 12px;
+    padding-right: 4px;
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 600px) {
+    .gx-player .title-info { display: none; }
+}
+
+/* ── Song rows ──────────────────────────────────────────────── */
+.gx-player .songs {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    gap: 6px;
+    list-style: none;
+}
+
+.gx-player .song {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: calc(100% + 44px);
+    min-height: 72px;
+    border-radius: 32px;
+    border: 2px solid var(--p-line);
+    padding: 0 22px;
+    margin: 0 -22px;
+    background: none;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+    box-shadow: inset 0 0 0 0 var(--p-hover);
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+.gx-player .songs .song:hover {
+    box-shadow: inset 0 0 64px 0 var(--p-hover);
+}
+
+.gx-player .song:focus-visible,
+.gx-player .toggle:focus-visible,
+.gx-player .close:focus-visible,
+.gx-player .permalink:focus-visible {
+    outline: 2px solid var(--p-text);
+    outline-offset: 2px;
+}
+
+/* Release whose embed is playing */
+.gx-player .song.is-playing .bold { color: var(--p-text); }
+
+.gx-player .end {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex: none;
+}
+
+.gx-player .song svg {
+    color: var(--p-text);
+    opacity: 0;
+    transition: 0.2s ease;
+}
+
+.gx-player .songs .song:hover svg { opacity: 0.5; }
+
+.gx-player .song svg:hover {
+    opacity: 1 !important;
+    cursor: pointer;
+}
+
+/* ── Progressive blur ───────────────────────────────────────── */
+.gx-player .gradient-blur {
+    position: absolute;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100%;
+    height: 101%;
+    inset: auto 0 0 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.gx-player .gradient-blur > div {
+    position: absolute;
+    inset: 0;
+    transition: 0.4s ease-out;
+}
+
+/* Opening a modal sharpens it: its blur drops away after a beat */
+.gx-player .content.active .gradient-blur > div {
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: 0.5s ease-out 0.3s;
+}
+
+.gx-player .gradient-blur > div:nth-of-type(1) {
+    z-index: 1;
+    backdrop-filter: blur(0.5px);
+    -webkit-backdrop-filter: blur(0.5px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 21%, rgba(0, 0, 0, 1) 29%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 21%, rgba(0, 0, 0, 1) 29%);
+}
+.gx-player .gradient-blur > div:nth-of-type(2) {
+    z-index: 2;
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 29%, rgba(0, 0, 0, 1) 37%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 29%, rgba(0, 0, 0, 1) 37%);
+}
+.gx-player .gradient-blur > div:nth-of-type(3) {
+    z-index: 3;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 37%, rgba(0, 0, 0, 1) 45%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 37%, rgba(0, 0, 0, 1) 45%);
+}
+.gx-player .gradient-blur > div:nth-of-type(4) {
+    z-index: 4;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 1) 53%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 1) 53%);
+}
+.gx-player .gradient-blur > div:nth-of-type(5) {
+    z-index: 5;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 53%, rgba(0, 0, 0, 1) 61%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 53%, rgba(0, 0, 0, 1) 61%);
+}
+.gx-player .gradient-blur > div:nth-of-type(6) {
+    z-index: 6;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 61%, rgba(0, 0, 0, 1) 73%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 61%, rgba(0, 0, 0, 1) 69%);
+}
+.gx-player .gradient-blur > div:nth-of-type(7) {
+    z-index: 7;
+    backdrop-filter: blur(64px);
+    -webkit-backdrop-filter: blur(64px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 69%, rgba(0, 0, 0, 1) 77%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 69%, rgba(0, 0, 0, 1) 77%);
+}
+.gx-player .gradient-blur > div:nth-of-type(8) {
+    z-index: 8;
+    backdrop-filter: blur(128px);
+    -webkit-backdrop-filter: blur(128px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 77%, rgba(0, 0, 0, 1) 85%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 77%, rgba(0, 0, 0, 1) 85%);
+}
+
+/* ── Modals (shared) ────────────────────────────────────────── */
+.gx-player .modal,
+.gx-player .song-modal {
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    background: var(--p-modal);
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    border-radius: 48px;
+    transform: translateZ(0);
+    overflow: hidden;
+    will-change: width, height;
+    cursor: pointer;
+    transition: 0.6s var(--p-ease);
+}
+
+/* ── Artist modal (the "+" disc) ────────────────────────────── */
+.gx-player .modal.active {
+    width: 500px;
+    height: 500px;
+    transition: 1s var(--p-ease);
+    cursor: auto;
+}
+
+.gx-player .toggle {
+    position: absolute;
+    z-index: 5;
+    top: 8px;
+    left: 8px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--p-text);
+    background: transparent;
+    backdrop-filter: blur(0px);
+    opacity: 1;
+    cursor: pointer;
+    transition: 0.2s all;
+}
+
+.gx-player .modal.active .toggle {
+    background: var(--p-toggle);
+    backdrop-filter: blur(24px);
+}
+
+.gx-player .modal.active .toggle:hover { background: var(--p-toggle-hover); }
+
+.gx-player .toggle svg {
+    transform: rotateZ(0deg);
+    transition: 1s cubic-bezier(0.32, 1.35, 0.75, 1);
+}
+.gx-player .modal.active .toggle svg { transform: rotateZ(135deg); }
+
+.gx-player .modal-content {
+    position: relative;
+    min-width: 500px;
+    height: 500px;
+    display: flex;
+    flex-flow: column;
+    padding: 4px;
+    transform: scale(0.8);
+    transform-origin: top left;
+    transition: transform 1s cubic-bezier(0.16, 0.61, 0.23, 1);
+}
+.gx-player .modal.active .modal-content { transform: scale(1); }
+
+.gx-player .modal .photo { object-fit: cover; }
+
+/* Inside the artist modal the pen's photo-on-top layout stays */
+.gx-player .modal .photo-wrapper {
+    aspect-ratio: auto;
+    height: 50%;
+    width: 100%;
+    max-height: 400px;
+}
+
+/* The pen overlays the artist name on the photo; this photo is the
+   GXMBY logo itself, so the name stays for screen readers only */
+.gx-player .modal .photo-wrapper h3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.gx-player .info {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 30px 0 30px;
+    flex: 1 1 0%;
+    overflow: scroll;
+}
+
+.gx-player .info-top { display: flex; gap: 16px; }
+
+.gx-player .info-top-left {
+    display: flex;
+    gap: 16px;
+    flex: 1 1 0%;
+}
+
+.gx-player .genre {
+    position: relative;
+    text-indent: 20px;
+}
+
+.gx-player .genre::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    background: var(--p-dot);
+    border-radius: 50%;
+    transform: translate(-20px, -50%);
+}
+
+.gx-player .divider {
+    width: 2px;
+    height: 16px;
+    background: var(--p-divider);
+    transform: translateY(3px);
+    border-radius: 1px;
+}
+
+.gx-player .shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    opacity: 1;
+    background: var(--p-modal);
+    pointer-events: none;
+    transition: 0.2s linear 0.2s opacity, 0.2s background;
+}
+
+.gx-player .active .shade,
+.gx-player .modal:hover .shade { background: var(--p-modal-hover); }
+
+.gx-player .content.active .shade {
+    opacity: 0;
+    transition: 0.2s all;
+}
+
+/* ── Song modal ─────────────────────────────────────────────── */
+/* Sits over its row (top is set inline), then rises by --rise to
+   the top of the card and grows to fill it. */
+.gx-player .song-modal {
+    left: 10px;
+    opacity: 0;
+    height: 72px;
+    width: calc(100% - 20px);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    transition: all 0.4s var(--p-ease), top 0s, opacity 0.2s 0.4s;
+}
+
+.gx-player .song-modal.active {
+    opacity: 1;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0 10px;
+    overflow: hidden;
+    transform: translateY(var(--rise));
+    cursor: auto;
+    pointer-events: all;
+    transition: all 0.6s var(--p-ease), top 0s, opacity 0s;
+}
+
+.gx-player .song-modal .song {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    width: 100%;
+    margin: 0;
+    border: 2px solid transparent;
+    border-bottom: 2px solid var(--p-line);
+    border-radius: 0;
+    cursor: auto;
+    transition: all 0.4s var(--p-ease);
+}
+
+.gx-player .song-modal.active .song {
+    min-height: 88px;
+    transition: all 0.6s var(--p-ease);
+}
+
+/* Title doubles in size; capped at half the row so 2x still fits */
+.gx-player .song-modal .song .bold {
+    max-width: 50%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transform: scale(1);
+    transform-origin: center left;
+    transition: all 0.4s var(--p-ease);
+}
+
+.gx-player .song-modal.active .song .bold {
+    letter-spacing: -0.03em;
+    transform: scale(2);
+    color: var(--p-text);
+    transition: all 0.6s var(--p-ease);
+}
+
+.gx-player .song-modal .end {
+    transform: translateX(0);
+    transition: transform 0.4s ease;
+}
+
+.gx-player .song-modal.active .end {
+    transform: translateX(65px);
+    transition: transform 0.2s ease;
+}
+
+/* The pen's short durations slid out of view; a full date only half
+   does, so fade it (it's repeated under the embed) */
+.gx-player .song-modal .end .light { transition: opacity 0.2s ease; }
+.gx-player .song-modal.active .end .light { opacity: 0; }
+
+/* The "+" spins into a close "×" */
+.gx-player .song-modal .song svg {
+    transform: rotateZ(0deg);
+    transition: transform 1.2s cubic-bezier(0.32, 1.35, 0.75, 1) !important;
+}
+
+.gx-player .song-modal.active .song svg {
+    transform: rotateZ(-495deg);
+    opacity: 0.5;
+}
+
+.gx-player .close {
+    display: grid;
+    place-items: center;
+    padding: 4px;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--p-text);
+    cursor: pointer;
+}
+
+.gx-player .song-modal-info {
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100%;
+    padding: 24px;
+    overflow: scroll;
+}
+
+/* ── Embeds + controls (site additions) ─────────────────────── */
+.gx-player .frame-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+/* Shorts are 9:16 — keep them column-width, not card-width */
+.gx-player .frame-box--short {
+    aspect-ratio: 9 / 16;
+    width: min(100%, 300px);
+    margin-inline: auto;
+}
+
+.gx-player .frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.gx-player .song-controls {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.gx-player .song-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gx-player .permalink {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--p-light);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.gx-player .permalink:hover { color: var(--p-text); }
+
+.gx-player .notes { margin-top: 24px; }
+
+/* ── Phones: small cover beside the title ───────────────────── */
+@media (max-width: 767px) {
+    .gx-player .content {
+        height: clamp(480px, 80svh, 720px);
+        border-radius: 32px;
+    }
+
+    .gx-player .main-content {
+        border-radius: 30px;
+        display: grid;
+        grid-template-columns: 84px 1fr;
+        column-gap: 16px;
+        align-content: start;
+        padding: 16px 16px 0;
+    }
+
+    .gx-player .main-content > .photo-wrapper {
+        position: relative;
+        top: 0;
+        width: 84px;
+        height: 84px;
+        margin: 0;
+    }
+
+    .gx-player .photo {
+        border-radius: 22px;
+        object-fit: cover;
+    }
+
+    .gx-player .photo--glow { filter: brightness(1.5) saturate(1) blur(24px); }
+
+    .gx-player .main-info { display: contents; }
+
+    /* Room on the right for the artist disc */
+    .gx-player .title-container {
+        grid-column: 2;
+        align-self: center;
+        padding-right: 92px;
+    }
+
+    .gx-player h3 { font-size: 26px; }
+
+    .gx-player .songs {
+        grid-column: 1 / -1;
+        padding: 20px 0 24px;
+    }
+
+    .gx-player .song {
+        width: calc(100% + 24px);
+        min-height: 64px;
+        padding: 0 12px;
+        margin: 0 -12px;
+    }
+
+    /* Artist disc moves to the top-right corner */
+    .gx-player .modal {
+        left: auto;
+        right: 0;
+    }
+
+    .gx-player .modal.active {
+        width: 100%;
+        height: min(460px, 100%);
+    }
+
+    .gx-player .modal-content {
+        min-width: calc(100vw - 2rem - 4px);
+        height: min(460px, 100%);
+        transform-origin: top right;
+    }
+
+    .gx-player .song-modal {
+        left: 4px;
+        width: calc(100% - 8px);
+    }
+
+    .gx-player .song-modal-info { padding: 16px 8px; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .gx-player *,
+    .gx-player .content,
+    .gx-player .main-content,
+    .gx-player .modal,
+    .gx-player .song-modal {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+    }
+}

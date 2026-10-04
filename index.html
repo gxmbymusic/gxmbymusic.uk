@@ -53,8 +53,8 @@
         <main class="releases">
             <h2 class="releases-heading">Releases</h2>
 
-            <!-- Rows are built by media.js from the catalogue -->
-            <div id="mediaList" class="media-list"></div>
+            <!-- MusicPlayer island: built from src/catalogue.js -->
+            <div id="player"></div>
         </main>
 
         <footer class="site-footer">
@@ -100,7 +100,6 @@
 
         <!-- Classic scripts, served as-is from public/ -->
         <script src="/engine.js"></script>
-        <script src="/media.js"></script>
 
         <!-- React islands (bundled by Vite; modules run after the above) -->
         <script type="module" src="/src/islands.jsx"></script>

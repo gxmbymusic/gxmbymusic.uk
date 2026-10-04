@@ -2,15 +2,15 @@
   "name": "gxmbymusic-tests",
   "private": true,
   "version": "1.0.0",
-  "description": "Regression tests for the gxmbymusic.uk release accordion",
+  "description": "Regression tests for gxmbymusic.uk (catalogue, player, layout)",
   "scripts": {
-    "test": "node accordion.test.js && node layout.test.js",
-    "test:accordion": "node accordion.test.js",
+    "test": "node catalogue.test.mjs && node player.test.js && node layout.test.js",
+    "test:catalogue": "node catalogue.test.mjs",
+    "test:player": "node player.test.js",
     "test:layout": "node layout.test.js",
     "setup": "npm install && npx playwright install chromium"
   },
   "devDependencies": {
-    "jsdom": "^24.0.0",
     "playwright": "^1.44.0"
   }
 }

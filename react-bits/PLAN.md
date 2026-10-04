@@ -74,6 +74,16 @@ The 21st.dev brief is a Beyoncé demo. It asks for TypeScript, Tailwind 4 and sh
 - **Volume:** CometDial `onChange(v)` → `ytPlayer.setVolume(v)`, or for SoundCloud, `iframe.contentWindow.postMessage(JSON.stringify({method:'setVolume', value:v}), '*')`. Remember the last value and apply it in the YouTube `onReady` / SoundCloud ready event when a new embed mounts. Known limitation: iOS ignores programmatic volume on embeds. There, the dial moves but the volume doesn't change. Document it; don't hack around it.
 - **Placeholders the user fills later:** bio text, artist photo, per-release `notes`, SoundCloud artwork.
 
+#### As built (step 4)
+
+- **CSS source:** 21st.dev's registry needs an API key, so the stylesheet came from the user's CodePen fork `dariusatsudev/pen/QwpqXoN` (of `kiranpate1/pen/wBwbRBq`). The fork's edits are kept: the card and the song-modal info scroll. Its stray `.` makes the song modal's 800px blur rule invalid, so that rule is dropped, as browsers already drop it. Scoped under `.gx-player`, themed with `--p-*` tokens, and set in OpenSauceSans. **License of the original pen/component: unknown; ask the author before shipping.**
+- **Layout:** two columns from 768px up (artwork sticky on the left, list on the right). On phones, an 84px cover sits beside the title. The pen's photo-on-top layout put the first release below the fold at every size (the user chose this in step 4).
+- **Artwork:** YouTube uses `maxresdefault.jpg` (Shorts: `oardefault.jpg`), all checked to exist. Discretion has its own SoundCloud artwork; reasons and Dazed have none, so they use the SoundCloud avatar (`SC_AVATAR` in `src/catalogue.js`). The artist modal shows the avatar too.
+- **SoundCloud embeds** use the "visual" player in a 16:9 box (`visual=true`). The compact player was a white card on the dark page.
+- **Song modal** starts over the clicked row and rises (`--rise`) to fill the card. No fixed 400px height and no magic offset.
+- **Bio** is `ARTIST_BIO` in `src/config.js`, a placeholder ("Music by GXMBY.", the existing og:description).
+- **Tests moved here from step 6,** so every commit stays green: `catalogue.test.mjs` (Node), `player.test.js` (Chromium, offline), `layout.test.js` (now asserts the artwork and the whole first row are above the fold). `accordion.test.js` is retired.
+
 ## Light / dark theme (added in step 3 at the user's request)
 
 - **Source of truth:** `<html data-theme="light|dark">`, set by `public/theme.js`. It loads blocking in `<head>`, so the theme is set before first paint. It follows the system preference until the visitor clicks `#themeToggle` (fixed, top right), then remembers the choice in `localStorage`, wrapped in try/catch.

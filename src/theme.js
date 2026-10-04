@@ -27,14 +27,16 @@ export const PALETTES = {
         bg: '#0b0a0f',
         molten: { color1: '#5227FF', color2: '#d3e45a', color3: '#FFFFFF', lightMode: false, opacity: 1.0 },
         veil: { inkColor: '#120f17', paperColor: '#3B82F6', rimColor: '#9c8ccc' },
-        depth: { faceColor: '#f8fafc', depthColor: '#3B82F6' }
+        depth: { faceColor: '#f8fafc', depthColor: '#3B82F6' },
+        dial: { accent: '#f5f5f5', ink: '#fdfdfd' }
     },
     light: {
         bg: '#ffffff',
         // Light mode paints a wash, not glowing filaments, so it stays pale
         molten: { color1: '#e4e0ff', color2: '#8f7bff', color3: '#5227FF', lightMode: true, opacity: 0.7 },
         veil: { inkColor: '#ffffff', paperColor: '#3B82F6', rimColor: '#5227FF' },
-        depth: { faceColor: '#0b0a0f', depthColor: '#3B82F6' }
+        depth: { faceColor: '#0b0a0f', depthColor: '#3B82F6' },
+        dial: { accent: '#0b0a0f', ink: '#0b0a0f' }
     }
 };
 

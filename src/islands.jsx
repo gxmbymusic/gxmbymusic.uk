@@ -18,6 +18,7 @@ import { usePalette } from './theme';
 import MoltenMetal from './components/MoltenMetal/MoltenMetal';
 import DitherVeil from './components/DitherVeil/DitherVeil';
 import DepthText from './components/DepthText/DepthText';
+import MusicPlayer from './components/MusicPlayer/MusicPlayer';
 
 // Read once: the components that honour it do so internally too,
 // these props cover the ones that don't.
@@ -95,7 +96,9 @@ function Wordmark() {
 const ISLANDS = [
     ['#bg', Background],
     ['#heroVeil', HeroVeil],
-    ['#mainText', Wordmark]
+    ['#mainText', Wordmark],
+    // Release browser: replaces the accordion (media.js, now _retired/)
+    ['#player', MusicPlayer]
 ];
 
 for (const [selector, Island] of ISLANDS) {
