@@ -194,7 +194,7 @@ h1#mainText {
     position: relative;
     z-index: 1;
     font-family: 'OpenSauceSans', sans-serif;
-    font-size: clamp(3.5rem, 15vw, 8.5rem);
+    font-size: clamp(3.5rem, 25vw, 25rem);
     font-weight: 900;
     line-height: 0.86;
     text-align: center;
