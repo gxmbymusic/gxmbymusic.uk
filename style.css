@@ -108,8 +108,10 @@ body {
 #ghostCanvas { z-index: 2; pointer-events: none; }
 
 /* ── Theme toggle ───────────────────────────────────────────── */
+/* Absolute, not fixed: it lives in the hero's top-right corner and
+   scrolls away, so it never sits on top of the player's controls. */
 .theme-toggle {
-    position: fixed;
+    position: absolute;
     top: calc(env(safe-area-inset-top) + 0.9rem);
     right: calc(env(safe-area-inset-right) + 0.9rem);
     z-index: 40;

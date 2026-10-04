@@ -133,7 +133,9 @@ const check = (label, cond, extra = '') => {
     await toggle.click();
     await settle();
     check('artist toggle expands', (await toggle.getAttribute('aria-expanded')) === 'true');
-    check('artist modal has the bio', /\S/.test(await page.locator('.gx-player .info .bold').textContent()));
+    check('artist modal has the bio', /\S/.test(await page.locator('.gx-player .bio').textContent()));
+    check('artist panel links all four platforms',
+        (await page.locator('.gx-player .links a[href^="https://"][rel*="noopener"]').count()) === 4);
     await page.keyboard.press('Escape');
     await settle();
     check('Escape closes the artist modal', (await toggle.getAttribute('aria-expanded')) === 'false');

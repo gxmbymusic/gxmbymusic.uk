@@ -1,16 +1,23 @@
 /* ============================================================
    MusicPlayer.jsx
-   The release browser. Structure and motion follow the
-   "Progressive Blur Modal" (Kiran Patel; 21st.dev brief in
+   The release browser. Motion follows the "Progressive Blur
+   Modal" (Kiran Patel; 21st.dev brief in
    react-bits/music-player.md, CSS from the user's CodePen fork
-   dariusatsudev/pen/QwpqXoN), rebuilt around the real catalogue:
+   dariusatsudev/pen/QwpqXoN), rebuilt around the real catalogue
+   with its own layout:
 
-   - photo + title: the selected release (newest by default)
-   - songs: every release; clicking one opens the song modal
+   - left column: artwork, title and meta of the selected
+     release (newest by default)
+   - right column: every release as a numbered row; clicking
+     one opens the song modal
    - song modal: grows out of the clicked row and holds the
      embed (mounted on first open, kept alive after so playback
      resumes), the CometDial volume and the permalink
-   - artist modal: the "+" disc, expanding to the bio
+   - "about gxmby" bar: grows into the artist panel, which
+     mirrors the main layout (avatar left; bio and links right)
+
+   All player text is lowercase (CSS); the DOM keeps the real
+   capitalisation for screen readers.
 
    Behaviour carried over from media.js: lazy embeds, pause on
    close, one panel at a time, pause the visuals when the tab
@@ -21,7 +28,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import CometDial from '../CometDial/CometDial';
 import { MEDIA, SOURCE_LABEL, SC_AVATAR, artUrl, canonicalUrl, embedUrl, formatDate, years } from '../../catalogue';
-import { ARTIST_BIO } from '../../config';
+import { ARTIST_BIO, SOCIAL } from '../../config';
 import { attachEmbed, stopReactive } from '../../embeds';
 import { usePalette } from '../../theme';
 
@@ -29,22 +36,25 @@ import './MusicPlayer.css';
 
 const DEFAULT_VOLUME = 100; // match the platforms' own default
 const [FIRST_YEAR, LAST_YEAR] = years();
-
-const MoreOptionsIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M5 10C3.9 10 3 10.9 3 12C3 13.1 3.9 14 5 14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10ZM19 10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14C20.1 14 21 13.1 21 12C21 10.9 20.1 10 19 10ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z" fill="currentColor" />
-    </svg>
-);
+const pad2 = n => String(n).padStart(2, '0');
 
 const AddIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M17.667 11.666H5.66699M11.667 5.66602V17.666" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 12H6M12 6V18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
 );
 
 const GradientBlur = () => (
     <div className="gradient-blur" aria-hidden="true">
         {Array.from({ length: 8 }, (_, i) => <div key={i} />)}
+    </div>
+);
+
+// Artwork with its soft glow behind (the pen's blurred duplicate).
+const Artwork = ({ src, alt }) => (
+    <div className="photo-wrapper">
+        <img className="photo photo--glow" src={src} alt="" aria-hidden="true" />
+        <img className="photo" src={src} alt={alt} />
     </div>
 );
 
@@ -82,7 +92,7 @@ export default function MusicPlayer() {
     const [artistOpen, setArtistOpen] = useState(false);
     const [mounted, setMounted] = useState([]); // indexes with a live embed
     const [playingId, setPlayingId] = useState(null);
-    const [modalTop, setModalTop] = useState(0);
+    const [from, setFrom] = useState({ top: 0, left: 0, width: 0 }); // clicked row, in card coordinates
 
     const contentRef = useRef(null);
     const rowRefs = useRef([]);
@@ -117,7 +127,13 @@ export default function MusicPlayer() {
         if (!row || !content) return;
         // The modal starts exactly over the clicked row, then grows to fill
         // the card (the demo measured only its first row, with a magic offset).
-        setModalTop(row.getBoundingClientRect().top - content.getBoundingClientRect().top);
+        const r = row.getBoundingClientRect();
+        const c = content.getBoundingClientRect();
+        setFrom({
+            top: r.top - c.top - content.clientTop,
+            left: r.left - c.left - content.clientLeft,
+            width: r.width
+        });
         returnFocus.current = row;
         setArtistOpen(false);
         setSelected(index);
@@ -179,67 +195,69 @@ export default function MusicPlayer() {
         <div className="gx-player">
             <div ref={contentRef} className={`content ${anyModalActive ? 'active' : ''}`}>
                 <div className="main-content" inert={anyModalActive}>
-                    <div className="photo-wrapper">
-                        <img className="photo" src={artUrl(current)} alt={`${current.title} artwork`} />
-                        <img className="photo photo--glow" src={artUrl(current)} alt="" aria-hidden="true" />
-                    </div>
-                    <div className="main-info">
-                        <div className="title-container">
+                    <div className="now">
+                        <Artwork src={artUrl(current)} alt={`${current.title} artwork`} />
+                        <div className="now-text">
                             <h3 className="title">{current.title}</h3>
-                            <div className="title-info">
-                                <span className="light">{SOURCE_LABEL[current.kind]}</span>
-                                <span className="divider" />
-                                <span className="light">{formatDate(current.date)}</span>
-                            </div>
+                            <p className="meta">
+                                {SOURCE_LABEL[current.kind]} · {formatDate(current.date)}
+                            </p>
                         </div>
-                        <ol className="songs" aria-label="Releases">
-                            {MEDIA.map((item, i) => (
-                                <li key={item.id}>
-                                    <button
-                                        ref={el => {
-                                            rowRefs.current[i] = el;
-                                        }}
-                                        type="button"
-                                        className={`song ${playingId === item.id ? 'is-playing' : ''}`}
-                                        aria-haspopup="dialog"
-                                        aria-expanded={openIndex === i}
-                                        aria-controls="gx-song-modal"
-                                        onClick={() => openSong(i)}
-                                    >
-                                        <span className="bold">{item.title}</span>
-                                        <span className="end">
-                                            <MoreOptionsIcon />
-                                            <span className="light">{formatDate(item.date)}</span>
-                                        </span>
-                                    </button>
-                                </li>
-                            ))}
-                        </ol>
                     </div>
+                    <ol className="songs" aria-label="Releases">
+                        {MEDIA.map((item, i) => (
+                            <li key={item.id}>
+                                <button
+                                    ref={el => {
+                                        rowRefs.current[i] = el;
+                                    }}
+                                    type="button"
+                                    className={[
+                                        'song',
+                                        i === selected ? 'is-current' : '',
+                                        playingId === item.id ? 'is-playing' : ''
+                                    ].join(' ').trim()}
+                                    aria-haspopup="dialog"
+                                    aria-expanded={openIndex === i}
+                                    aria-controls="gx-song-modal"
+                                    onClick={() => openSong(i)}
+                                >
+                                    <span className="index meta" aria-hidden="true">{pad2(i + 1)}</span>
+                                    <span className="name">{item.title}</span>
+                                    <span className="date meta">{formatDate(item.date)}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ol>
                 </div>
 
                 <div
                     id="gx-song-modal"
                     className={`song-modal ${songOpen ? 'active' : ''}`}
-                    style={{ top: `${modalTop}px`, '--rise': `${-modalTop}px` }}
+                    style={{
+                        top: `${from.top}px`,
+                        '--rise': `${-from.top}px`,
+                        '--from-left': `${from.left}px`,
+                        '--from-width': from.width ? `${from.width}px` : '100%'
+                    }}
                     role="dialog"
                     aria-labelledby="gx-song-title"
                     inert={!songOpen}
                 >
-                    <div className="song song--head">
-                        <span id="gx-song-title" className="bold">{openItem.title}</span>
-                        <span className="end">
-                            <button ref={closeRef} type="button" className="close" aria-label="Close" onClick={closeSong}>
-                                <AddIcon />
-                            </button>
-                            <span className="light">{formatDate(openItem.date)}</span>
-                        </span>
+                    <div className="song-head">
+                        <span className="index meta" aria-hidden="true">{pad2(MEDIA.indexOf(openItem) + 1)}</span>
+                        <span id="gx-song-title" className="name">{openItem.title}</span>
+                        <button ref={closeRef} type="button" className="close" aria-label="Close" onClick={closeSong}>
+                            <AddIcon />
+                        </button>
                     </div>
-                    <div className="song-modal-info">
+                    <div className="song-body">
                         {mounted.map(i => (
                             <Embed key={MEDIA[i].id} item={MEDIA[i]} active={i === openIndex} register={register} />
                         ))}
-                        <div className="song-controls">
+                    </div>
+                    <div className="song-foot">
+                        <div className="volume">
                             <CometDial
                                 defaultValue={DEFAULT_VOLUME}
                                 min={0}
@@ -248,7 +266,7 @@ export default function MusicPlayer() {
                                 unit="%"
                                 label="Volume"
                                 {...palette.dial}
-                                size={128}
+                                size={88}
                                 sweep={320}
                                 thickness={3}
                                 speed={25}
@@ -259,16 +277,17 @@ export default function MusicPlayer() {
                                 cometWidth={6}
                                 onChange={onVolume}
                             />
-                            <div className="song-links">
-                                <span className="light">
-                                    {SOURCE_LABEL[openItem.kind]} · {formatDate(openItem.date)}
-                                </span>
-                                <a className="permalink" href={canonicalUrl(openItem)} target="_blank" rel="noopener noreferrer">
-                                    open on {SOURCE_LABEL[openItem.kind]} ↗
-                                </a>
-                            </div>
+                            <span className="meta" aria-hidden="true">volume</span>
                         </div>
-                        {openItem.notes ? <p className="bold notes">{openItem.notes}</p> : null}
+                        <div className="song-links">
+                            <p className="meta">
+                                {SOURCE_LABEL[openItem.kind]} · {formatDate(openItem.date)}
+                            </p>
+                            <a className="permalink" href={canonicalUrl(openItem)} target="_blank" rel="noopener noreferrer">
+                                open on {SOURCE_LABEL[openItem.kind]} <span aria-hidden="true">↗</span>
+                            </a>
+                            {openItem.notes ? <p className="notes">{openItem.notes}</p> : null}
+                        </div>
                     </div>
                     <GradientBlur />
                 </div>
@@ -283,24 +302,35 @@ export default function MusicPlayer() {
                         aria-label={artistOpen ? 'Close artist info' : 'About GXMBY'}
                         onClick={() => setArtistOpen(o => !o)}
                     >
-                        <AddIcon />
+                        <span className="toggle-label" aria-hidden="true">about gxmby</span>
+                        <span className="toggle-icon">
+                            <AddIcon />
+                        </span>
                     </button>
                     <div id="gx-artist" className="modal-content" inert={!artistOpen}>
-                        <div className="photo-wrapper">
-                            <h3>GXMBY</h3>
-                            <img className="photo" src={SC_AVATAR} alt="GXMBY" />
-                            <img className="photo photo--glow" src={SC_AVATAR} alt="" aria-hidden="true" />
+                        <div className="now">
+                            <Artwork src={SC_AVATAR} alt="GXMBY" />
+                            <div className="now-text">
+                                <h3 className="title">GXMBY</h3>
+                                <p className="meta">
+                                    {MEDIA.length} releases · {FIRST_YEAR}–{LAST_YEAR}
+                                </p>
+                            </div>
                         </div>
                         <div className="info">
-                            <div className="info-top">
-                                <div className="info-top-left">
-                                    <span className="genre light">{MEDIA.length} releases</span>
-                                    <span className="divider" />
-                                    <span className="light">{FIRST_YEAR}–{LAST_YEAR}</span>
-                                </div>
-                                <span className="light">youtube · soundcloud</span>
-                            </div>
-                            <p className="bold">{ARTIST_BIO}</p>
+                            <p className="bio">{ARTIST_BIO}</p>
+                            <ul className="links" aria-label="GXMBY elsewhere">
+                                {SOCIAL.map(s => (
+                                    <li key={s.label}>
+                                        <a className="link-row" href={s.href} target="_blank" rel="noopener noreferrer">
+                                            <span className="name">{s.label}</span>
+                                            <span className="meta">
+                                                {s.handle} <span aria-hidden="true">↗</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                     <GradientBlur />

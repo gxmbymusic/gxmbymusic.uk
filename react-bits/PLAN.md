@@ -84,6 +84,15 @@ The 21st.dev brief is a Beyoncé demo. It asks for TypeScript, Tailwind 4 and sh
 - **Bio** is `ARTIST_BIO` in `src/config.js`, a placeholder ("Music by GXMBY.", the existing og:description).
 - **Tests moved here from step 6,** so every commit stays green: `catalogue.test.mjs` (Node), `player.test.js` (Chromium, offline), `layout.test.js` (now asserts the artwork and the whole first row are above the fold). `accordion.test.js` is retired.
 
+#### Player restyle (after step 6, user request)
+
+- **All player text is lowercase** (`text-transform`; the DOM keeps real capitals for screen readers). Not small caps: OpenSauceSans has no true small caps, so browsers would fake them with shrunken capitals.
+- **One type scale:** display (titles), body (names, bio, links), meta (dates, sources, counts, labels). **One spacing scale:** `--pad` on every card edge, `--gap` between columns, rows of `--row-h`.
+- **Rest view:** artwork with title and meta below it on the left; numbered rows with hairline dividers on the right. The "+" disc became an "about gxmby" bar at the bottom of the left column (on phones, the bottom of the card, with the list fading out beneath it).
+- **Song panel:** grows from the clicked row's exact box. The embed is sized from the card (`.content` is a size container), so the video, volume dial and link always fit, grouped and edge-aligned.
+- **Artist panel:** fills the card and mirrors the main layout: avatar, name and counts left; bio and platform links (`SOCIAL` in `src/config.js`) right.
+- **The theme toggle** is absolute in the hero instead of fixed, so it no longer covers the player's close button.
+
 #### Step 5 as built
 
 > **Swapped after step 5 (user request):** the RELEASES heading uses **TechText** and the footer links use **WarpText**, the reverse of the table above. The notes below describe the swapped build. Cost: four extra WebGL contexts (six in all), and the footer-in-view frame rate in software rendering fell from 24.8 to 15.4 fps.
