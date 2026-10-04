@@ -11,4 +11,4 @@ export const HERO_IMAGE =
 
 // Artist modal text in the player. Placeholder until a real bio is
 // written — this is the site's existing og:description.
-export const ARTIST_BIO = 'Darius Atsu (aka: gxmby, unimke, + others not metioned).  Artist/Musician from SW London.';
+export const ARTIST_BIO = 'Darius Atsu (aka: gxmby, unimke, + others not mentioned).  Artist/Musician from SW London.';
