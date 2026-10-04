@@ -1,0 +1,4 @@
+{
+  "//": "src/ is ES modules (bundled by Vite, imported by test/catalogue.test.mjs); the repo root stays CommonJS for generate-reactive-sequence.js",
+  "type": "module"
+}

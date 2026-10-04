@@ -55,15 +55,29 @@
     box-sizing: border-box;
 }
 
-/* `hidden` must beat the layout `display` on .media-panel */
+/* `hidden` must beat layout `display` rules (player modals, frame boxes) */
 [hidden] { display: none !important; }
 
+/* Dark: every component palette in react-bits/ is near-white ink. */
 :root {
+    --bg: #0b0a0f;
+    --fg: #f8fafc;
+    --fg-muted: rgba(248, 250, 252, 0.55);
+    --rule: rgba(255, 255, 255, 0.14);
+    --plate: rgba(18, 15, 23, 0.62);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    color-scheme: dark;
+}
+
+/* Light: the site's original palette. data-theme is set by theme.js
+   before first paint; component colours live in src/theme.js. */
+:root[data-theme="light"] {
     --bg: #ffffff;
     --fg: #000000;
     --fg-muted: rgba(0, 0, 0, 0.5);
     --rule: rgba(0, 0, 0, 0.14);
-    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --plate: rgba(255, 255, 255, 0.86);
+    color-scheme: light;
 }
 
 html {
@@ -78,19 +92,73 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Canvases ───────────────────────────────────────────────── */
-/* Fixed ambient layers behind all content, across the whole scroll. */
-#particleCanvas,
+/* ── Ambient layers ─────────────────────────────────────────── */
+/* Fixed behind all content, across the whole scroll. #bg is the
+   MoltenMetal island; it takes the pointer only where nothing
+   sits above it. */
+#bg,
 #ghostCanvas {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
 }
 
-#particleCanvas { z-index: 1; }
-#ghostCanvas    { z-index: 2; }
+#bg          { z-index: 0; }
+#ghostCanvas { z-index: 2; pointer-events: none; }
+
+/* ── Theme toggle ───────────────────────────────────────────── */
+/* Absolute, not fixed: it lives in the hero's top-right corner and
+   scrolls away, so it never sits on top of the player's controls. */
+.theme-toggle {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 0.9rem);
+    right: calc(env(safe-area-inset-right) + 0.9rem);
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: var(--plate);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--fg);
+    cursor: pointer;
+    transition: border-color 0.25s ease;
+}
+
+.theme-toggle:hover { border-color: var(--fg-muted); }
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+}
+
+.theme-toggle svg {
+    grid-area: 1 / 1;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.3s ease, transform 0.45s var(--ease);
+}
+
+/* Shows the theme you'd switch TO: sun on dark, moon on light */
+.theme-toggle__moon,
+:root[data-theme="light"] .theme-toggle__sun {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.6);
+}
+
+:root[data-theme="light"] .theme-toggle__moon {
+    opacity: 1;
+    transform: none;
+}
 
 /* ── Hero ───────────────────────────────────────────────────── */
 /* Deliberately NOT 100svh. A full-height hero puts the release list
@@ -105,21 +173,37 @@ body {
     display: grid;
     place-items: center;
     padding: 1rem;
-    pointer-events: none;
 }
 
+/* DitherVeil fills the hero and takes the pointer; its lower edge
+   fades out so the image melts into the background. */
+#heroVeil {
+    position: absolute;
+    inset: 0;
+    /* DitherVeil dots its first pixel column; push it off-screen */
+    left: -2px;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent);
+}
+
+/* Holds the DepthText island. The font-size here IS the wordmark
+   size (DepthText gets fontSize="1em"), and engine.js reads it to
+   size the echoes. Letter-spacing/colour are DepthText's own. */
 h1#mainText {
-    font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
-    font-size: clamp(3rem, 28vw, 25rem);
+    position: relative;
+    z-index: 1;
+    font-family: 'OpenSauceSans', sans-serif;
+    font-size: clamp(3.5rem, 25vw, 25rem);
     font-weight: 900;
-    line-height: 0.85;
-    letter-spacing: -0.2em;
+    line-height: 0.86;
     text-align: center;
-    text-transform: uppercase;
     color: var(--fg);
 
     user-select: none;
     cursor: default;
+    /* Pointer passes through to the veil; DepthText tracks the
+       pointer on window, so its tilt still works. */
     pointer-events: none;
 
     /* GPU layer — JS mutates transform/opacity/filter every frame */
@@ -135,10 +219,9 @@ h1#mainText {
     margin: 0 auto;
     padding-bottom: 4rem;
 
-    /* Legible plate over the particle field */
-    background: rgba(255, 255, 255, 0.86);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    /* No plate: the player card carries its own surface, and the old
+       full-width glass panel only drew hard edges across the hero's
+       fade and above the footer. */
 }
 
 .releases-heading {
@@ -151,155 +234,9 @@ h1#mainText {
     padding: 1.5rem 0.25rem 1rem;
 }
 
-.media-list {
-    border-top: 1px solid var(--rule);
-}
-
-.media-row {
-    border-bottom: 1px solid var(--rule);
-}
-
-/* ── Trigger (the expanding link) ───────────────────────────── */
-.media-trigger {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 2.75rem 1fr auto 1.25rem;
-    align-items: baseline;
-    gap: 0.75rem;
-
-    padding: 1.05rem 0.25rem;
-    background: none;
-    border: 0;
-    text-align: left;
-    cursor: pointer;
-    font-family: 'OpenSauceSans', sans-serif;
-    color: var(--fg);
-    transition: opacity 0.25s ease;
-}
-
-.media-trigger:hover  { opacity: 0.55; }
-.media-trigger:focus-visible {
-    outline: 2px solid var(--fg);
-    outline-offset: 2px;
-}
-
-.media-index {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--fg-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.media-title {
-    font-size: clamp(1rem, 2.6vw, 1.5rem);
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    line-height: 1.15;
-}
-
-.media-meta {
-    display: flex;
-    align-items: baseline;
-    gap: 0.9rem;
-    font-size: 0.66rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--fg-muted);
-    white-space: nowrap;
-}
-
-.media-source {
-    padding: 0.2rem 0.5rem;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-}
-
-/* Row currently driving the audio-reactive visuals */
-.media-row.is-playing .media-source {
-    border-color: var(--fg);
-    color: var(--fg);
-}
-
-/* Chevron: rotates a quarter turn when the row opens */
-.media-chevron {
-    align-self: center;
-    justify-self: end;
-    width: 0.55rem;
-    height: 0.55rem;
-    border-right: 1.5px solid var(--fg);
-    border-bottom: 1.5px solid var(--fg);
-    transform: rotate(45deg);
-    transition: transform 0.35s var(--ease);
-}
-
-.media-row.is-open .media-chevron {
-    transform: rotate(-135deg);
-}
-
-/* ── Panel ──────────────────────────────────────────────────── */
-/* 0fr → 1fr animates to the content's natural height. */
-.media-panel {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.45s var(--ease);
-}
-
-.media-row.is-open .media-panel {
-    grid-template-rows: 1fr;
-}
-
-.media-panel-inner {
-    min-height: 0;
-    overflow: hidden;
-}
-
-.media-frame-box {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    border: 1px solid var(--rule);
-    overflow: hidden;
-}
-
-/* Shorts are 9:16 — keep them column-width, not page-width */
-.media-row--short .media-frame-box {
-    aspect-ratio: 9 / 16;
-    width: min(100%, 330px);
-    margin-inline: auto;
-}
-
-/* SoundCloud's compact player has a fixed height, not a ratio */
-.media-row--sc .media-frame-box {
-    aspect-ratio: auto;
-    height: 166px;
-    background: transparent;
-    border: 0;
-}
-
-.media-frame {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-
-.media-permalink {
-    display: inline-block;
-    margin: 0.7rem 0.25rem 1.25rem;
-    font-family: 'OpenSauceSans', sans-serif;
-    font-size: 0.66rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--fg-muted);
-    text-decoration: none;
-    transition: color 0.25s ease;
-}
-
-.media-permalink:hover { color: var(--fg); }
+/* Once TechText mounts, it is the heading: tighter padding, height
+   set by the island (viewport-tied). */
+.releases-heading:has(.tech-text) { padding: 0.5rem 0 0.25rem; }
 
 /* ── Footer / social links ──────────────────────────────────── */
 .site-footer {
@@ -329,6 +266,23 @@ h1#mainText {
 
 .social-links a:hover { opacity: 1; }
 
+/* WarpText-drawn links: the box is sized per label by SocialLink.jsx */
+.social-links a[data-tech] {
+    display: inline-flex;
+    opacity: 0.7;
+    border-radius: 6px;
+}
+
+.social-links a[data-tech]:hover,
+.social-links a[data-tech]:focus-visible { opacity: 1; }
+
+.social-links a:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 4px;
+}
+
+.social-link__box { display: block; }
+
 /* ── Mobile ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
     .releases {
@@ -336,33 +290,10 @@ h1#mainText {
         padding-inline: 1rem;
     }
 
-    .media-trigger {
-        grid-template-columns: 2rem 1fr 1rem;
-        row-gap: 0.35rem;
-        padding: 0.95rem 0;
-    }
-
-    /* Meta drops to its own line under the title */
-    .media-meta {
-        grid-column: 2 / 3;
-        gap: 0.7rem;
-    }
-
-    .media-chevron {
-        grid-column: 3 / 4;
-        grid-row: 1 / 2;
-    }
-
-    .social-links { gap: 1.25rem; }
+    .social-links { gap: 0.5rem 1.25rem; }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-
-    .media-panel,
-    .media-chevron,
-    .media-trigger {
-        transition-duration: 0.01ms;
-    }
 }

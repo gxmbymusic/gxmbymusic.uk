@@ -1,0 +1,22 @@
+{
+  "name": "gxmbymusic",
+  "private": true,
+  "version": "1.0.0",
+  "description": "gxmbymusic.uk — static page built by Vite, with React islands for the visual components",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "motion": "^14.0.0",
+    "ogl": "^1.0.11",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.2"
+  }
+}

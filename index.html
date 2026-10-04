@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#0b0a0f" />
 
         <!-- OG / Social -->
         <meta property="og:title" content="GXMBY" />
@@ -17,26 +17,45 @@
         <link rel="preconnect" href="https://w.soundcloud.com" />
 
         <title>GXMBY</title>
+
+        <!-- Blocking on purpose: sets data-theme before first paint -->
+        <script src="/theme.js"></script>
+        <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <!-- Particle field -->
-        <canvas id="particleCanvas"></canvas>
+        <!-- Background: MoltenMetal island (audio-reactive WebGL) -->
+        <div id="bg" aria-hidden="true"></div>
 
         <!-- Ghost text canvas (audio-reactive expanding rings) -->
         <canvas id="ghostCanvas"></canvas>
 
+        <!-- Light / dark toggle (wired by theme.js) -->
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme">
+            <svg class="theme-toggle__sun" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.5" />
+                <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" />
+            </svg>
+            <svg class="theme-toggle__moon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" />
+            </svg>
+        </button>
+
         <!-- ── Hero ─────────────────────────────────────────── -->
         <header class="hero">
+            <!-- DitherVeil island: the hero image -->
+            <div id="heroVeil" aria-hidden="true"></div>
+            <!-- DepthText island mounts inside; engine.js finds it by id -->
             <h1 id="mainText">GXMBY</h1>
         </header>
 
         <!-- ── Releases ─────────────────────────────────────── -->
         <main class="releases">
-            <h2 class="releases-heading">Releases</h2>
+            <!-- WarpText island; "Releases" is the no-JS fallback -->
+            <h2 id="releasesTitle" class="releases-heading">Releases</h2>
 
-            <!-- Rows are built by media.js from the catalogue -->
-            <div id="mediaList" class="media-list"></div>
+            <!-- MusicPlayer island: built from src/catalogue.js -->
+            <div id="player"></div>
         </main>
 
         <footer class="site-footer">
@@ -45,24 +64,32 @@
                     href="https://instagram.com/gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="instagram"
+                    data-tech="instagram"
                     >instagram</a
                 >
                 <a
                     href="https://x.com/gxmbysk"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="x"
+                    data-tech="x"
                     >x</a
                 >
                 <a
                     href="https://youtube.com/@gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="youtube"
+                    data-tech="youtube"
                     >youtube</a
                 >
                 <a
                     href="https://soundcloud.com/gxmby"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="soundcloud"
+                    data-tech="soundcloud"
                     >soundcloud</a
                 >
             </nav>
@@ -80,8 +107,10 @@
             crossorigin="anonymous"
         ></audio>
 
-        <script src="particles.js"></script>
-        <script src="engine.js"></script>
-        <script src="media.js"></script>
+        <!-- Classic scripts, served as-is from public/ -->
+        <script src="/engine.js"></script>
+
+        <!-- React islands (bundled by Vite; modules run after the above) -->
+        <script type="module" src="/src/islands.jsx"></script>
     </body>
 </html>

@@ -64,9 +64,10 @@
       // Route hidden audio through analyser but NOT to speakers
       sourceNode = audioCtx.createMediaElementSource(syncAudio);
       sourceNode.connect(analyser);
-      // Intentionally NOT connecting to destination — stays silent
+      // Intentionally NOT connecting to destination — stays silent.
+      // Leave the element's volume at 1: once routed here it applies
+      // *before* the analyser, so volume 0 fed it pure silence.
 
-      syncAudio.volume = 0;
       audioReady = true;
       console.log("[engine] AudioContext created, state:", audioCtx.state);
     } catch (e) {
@@ -92,7 +93,9 @@
       });
     }
 
-    if (playing) {
+    // Only play once routed into the (silent) graph — unrouted, the
+    // element would be audible under the YouTube embed.
+    if (playing && audioReady) {
       try {
         syncAudio.currentTime = currentTime;
         syncAudio
@@ -214,10 +217,11 @@
       gCtx.translate(cx, cy);
       gCtx.scale(scale, scale);
       gCtx.globalAlpha = alpha;
-      gCtx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`;
+      // Matches the DepthText wordmark (OpenSauceSans 900, -0.065em)
+      gCtx.font = `900 ${fontSize}px 'OpenSauceSans', sans-serif`;
       gCtx.textAlign = "center";
       gCtx.textBaseline = "middle";
-      gCtx.letterSpacing = "-0.2em";
+      gCtx.letterSpacing = "-0.065em";
       gCtx.fillStyle = `${e.color}1)`;
       gCtx.fillText("GXMBY", 0, 0);
       gCtx.restore();
@@ -238,7 +242,6 @@
     const scale = 1 + e * 0.09 + p * 0.07;
     const rotation = (p - 0.5) * 3.5 * a;
     const skew = (peak - 0.5) * 5 * a;
-    const glow = 6 + e * 22 + p * 18;
     const brightness = 1 + e * 0.14;
     const hue = p * 14 * a;
     const letterSpacing = -0.2 + e * 0.1 + p * 0.06;
@@ -249,13 +252,17 @@
     mainText.style.transform = `scale(${scale}) rotate(${rotation}deg) skewX(${skew}deg)`;
     mainText.style.opacity = opacity;
     mainText.style.filter = `brightness(${brightness}) hue-rotate(${hue}deg)`;
-    mainText.style.textShadow = `0 0 ${glow}px rgba(0,0,0,0.22)`;
     mainText.style.letterSpacing = `${letterSpacing}em`;
   }
 
   // ── Unified rAF loop ──────────────────────────────────────
+  // Last frame's levels, for consumers outside this loop (the
+  // MoltenMetal background reads them from its own rAF).
+  let lastLevel = { energy: 0, transient: 0, peak: 0 };
+
   function tick() {
     const { energy, transient, peak } = readAudio();
+    lastLevel = { energy, transient, peak };
 
     // Spawn echo on strong transients (beat detection)
     transientBudget = Math.max(0, transientBudget - 0.025);
@@ -276,8 +283,9 @@
     requestAnimationFrame(tick);
   }
 
-  // ── Public API (used by media.js) ────────────────────────
-  window.GXMBYEngine = { setPlayback };
+  // ── Public API ───────────────────────────────────────────
+  // setPlayback: media.js. level: React islands (src/islands.jsx).
+  window.GXMBYEngine = { setPlayback, level: () => lastLevel };
 
   // ── Kick off ─────────────────────────────────────────────
   tick();

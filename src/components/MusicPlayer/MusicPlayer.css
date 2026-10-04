@@ -1,0 +1,736 @@
+/* ============================================================
+   MusicPlayer.css
+   Motion and the progressive blur from "Progressive Blur Modal"
+   by Kiran Patel (codepen.io/kiranpate1/pen/wBwbRBq), via the
+   user's fork codepen.io/dariusatsudev/pen/QwpqXoN. Layout and
+   type are this site's own:
+
+   - one type scale: display (titles), body (names, bio, links),
+     meta (dates, sources, counts, labels); all lowercase;
+   - one spacing scale on 8px: --pad around the card's edges,
+     --gap between columns, rows of --row-h;
+   - two columns from 768px (artwork + title left, releases
+     right); phones stack a small cover beside the title.
+
+   Everything is scoped under .gx-player; colours are --p-*
+   tokens with a light theme. .content is a size container so
+   modals can size their contents to the card (cqw / cqh).
+   ============================================================ */
+
+.gx-player {
+    --p-card: #161616;
+    --p-card-active: #0f0f0f;
+    --p-border: #232120;
+    --p-glow: rgba(52, 46, 45, 1);
+    --p-glow-active: rgba(52, 46, 45, 0.7);
+    --p-modal: #272322;
+    --p-modal-hover: #342e2d;
+    --p-text: #ffffff;
+    --p-body: rgba(255, 255, 255, 0.72);
+    --p-muted: rgba(255, 255, 255, 0.45);
+    --p-line: rgba(255, 255, 255, 0.07);
+    --p-fill: rgba(255, 255, 255, 0.06);
+    --p-control: rgba(255, 255, 255, 0.08);
+    --p-control-hover: rgba(255, 255, 255, 0.14);
+    --p-accent: #6d9eff;
+    --p-ease: cubic-bezier(0.17, 1, 0.33, 1);
+
+    /* Spacing and type scales */
+    --pad: 24px;
+    --gap: 32px;
+    --row-h: 52px;
+    --radius: 40px;
+    --radius-art: 24px;
+    --t-display: 28px;
+    --head-h: 88px;  /* song panel header, open */
+    --foot-h: 148px; /* song panel footer: dial + label + padding */
+
+    position: relative;
+    width: 100%;
+    font-family: 'OpenSauceSans', sans-serif;
+    text-transform: lowercase;
+    text-rendering: geometricPrecision;
+}
+
+:root[data-theme="light"] .gx-player {
+    --p-card: #f6f5f4;
+    --p-card-active: #efeeec;
+    --p-border: #e6e3e1;
+    --p-glow: rgba(214, 208, 204, 0.9);
+    --p-glow-active: rgba(214, 208, 204, 0.6);
+    --p-modal: #ebe7e4;
+    --p-modal-hover: #e0dbd7;
+    --p-text: #0b0a0f;
+    --p-body: rgba(11, 10, 15, 0.78);
+    --p-muted: rgba(11, 10, 15, 0.5);
+    --p-line: rgba(0, 0, 0, 0.08);
+    --p-fill: rgba(0, 0, 0, 0.045);
+    --p-control: rgba(0, 0, 0, 0.06);
+    --p-control-hover: rgba(0, 0, 0, 0.1);
+    --p-accent: #2563eb;
+}
+
+/* Browsers reset text-transform on buttons; keep it lowercase */
+.gx-player button { text-transform: inherit; }
+
+/* Hidden scrollbars, as in the pen */
+.gx-player * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.gx-player *::-webkit-scrollbar { display: none; }
+
+/* ── Type ───────────────────────────────────────────────────── */
+.gx-player .title {
+    font-size: var(--t-display);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--p-text);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.gx-player .name,
+.gx-player .bio,
+.gx-player .notes,
+.gx-player .permalink,
+.gx-player .toggle-label {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: var(--p-body);
+}
+
+.gx-player .meta {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--p-muted);
+}
+
+.gx-player .name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.gx-player .content {
+    position: relative;
+    width: 100%;
+    height: clamp(520px, 84svh, 860px);
+    container-type: size;
+    background: var(--p-card);
+    box-shadow: inset 0 0 150px var(--p-glow);
+    border-radius: var(--radius);
+    border: 2px solid var(--p-border);
+    transform: translate3d(0, 0, 0);
+    will-change: box-shadow;
+    transition: 1s var(--p-ease);
+}
+
+.gx-player .content.active {
+    box-shadow: inset 0 0 150px var(--p-glow-active);
+    background: var(--p-card-active);
+}
+
+/* Main view: two columns, the page scrolls the list, the left
+   column stays put. */
+.gx-player .main-content {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    column-gap: var(--gap);
+    align-items: start;
+    align-content: start;
+    padding: var(--pad);
+    border-radius: calc(var(--radius) - 2px);
+    overflow: scroll;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px) brightness(1);
+    will-change: transform, filter;
+    transition: 0.6s var(--p-ease);
+}
+
+.gx-player .content.active .main-content {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    filter: blur(16px) brightness(0.7);
+    transition: 0.3s ease-out;
+}
+
+/* Selected release (and, in the artist panel, the artist) */
+.gx-player .now {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.gx-player .main-content > .now {
+    position: sticky;
+    top: 0;
+}
+
+.gx-player .now-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.gx-player .photo-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    flex: none;
+}
+
+.gx-player .photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--p-card);
+    border-radius: var(--radius-art);
+}
+
+/* The pen's blurred duplicate, toned down to a soft glow below */
+.gx-player .photo--glow {
+    filter: blur(40px) saturate(1.2);
+    opacity: 0.45;
+    transform: translateY(8%) scale(0.9);
+}
+
+/* ── Release rows ───────────────────────────────────────────── */
+.gx-player .songs,
+.gx-player .links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.gx-player .songs li + li,
+.gx-player .links li + li {
+    border-top: 1px solid var(--p-line);
+}
+
+/* Text sits on the column edge; the hover fill bleeds 12px out */
+.gx-player .song,
+.gx-player .link-row {
+    display: grid;
+    align-items: center;
+    column-gap: 12px;
+    width: calc(100% + 24px);
+    min-height: var(--row-h);
+    margin: 0 -12px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.gx-player .song { grid-template-columns: 24px minmax(0, 1fr) auto; }
+.gx-player .link-row { grid-template-columns: minmax(0, 1fr) auto; }
+
+.gx-player .song:hover,
+.gx-player .link-row:hover { background: var(--p-fill); }
+
+.gx-player .song:hover .name,
+.gx-player .link-row:hover .name { color: var(--p-text); }
+
+.gx-player .song.is-current .name,
+.gx-player .song.is-current .index { color: var(--p-text); }
+
+/* Release whose embed is playing */
+.gx-player .song.is-playing .index { color: var(--p-accent); }
+
+.gx-player .song:focus-visible,
+.gx-player .link-row:focus-visible,
+.gx-player .toggle:focus-visible,
+.gx-player .close:focus-visible,
+.gx-player .permalink:focus-visible {
+    outline: 2px solid var(--p-text);
+    outline-offset: 2px;
+}
+
+/* ── Progressive blur ───────────────────────────────────────── */
+.gx-player .gradient-blur {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.gx-player .gradient-blur > div {
+    position: absolute;
+    inset: 0;
+    transition: 0.4s ease-out;
+}
+
+/* Opening a modal sharpens it: its blur drops away after a beat */
+.gx-player .content.active .gradient-blur > div {
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: 0.5s ease-out 0.3s;
+}
+
+.gx-player .gradient-blur > div:nth-of-type(1) {
+    z-index: 1;
+    backdrop-filter: blur(0.5px);
+    -webkit-backdrop-filter: blur(0.5px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 21%, rgba(0, 0, 0, 1) 29%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 21%, rgba(0, 0, 0, 1) 29%);
+}
+.gx-player .gradient-blur > div:nth-of-type(2) {
+    z-index: 2;
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 29%, rgba(0, 0, 0, 1) 37%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 29%, rgba(0, 0, 0, 1) 37%);
+}
+.gx-player .gradient-blur > div:nth-of-type(3) {
+    z-index: 3;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 37%, rgba(0, 0, 0, 1) 45%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 37%, rgba(0, 0, 0, 1) 45%);
+}
+.gx-player .gradient-blur > div:nth-of-type(4) {
+    z-index: 4;
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 1) 53%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 1) 53%);
+}
+.gx-player .gradient-blur > div:nth-of-type(5) {
+    z-index: 5;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 53%, rgba(0, 0, 0, 1) 61%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 53%, rgba(0, 0, 0, 1) 61%);
+}
+.gx-player .gradient-blur > div:nth-of-type(6) {
+    z-index: 6;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 61%, rgba(0, 0, 0, 1) 73%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 61%, rgba(0, 0, 0, 1) 69%);
+}
+.gx-player .gradient-blur > div:nth-of-type(7) {
+    z-index: 7;
+    backdrop-filter: blur(64px);
+    -webkit-backdrop-filter: blur(64px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 69%, rgba(0, 0, 0, 1) 77%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 69%, rgba(0, 0, 0, 1) 77%);
+}
+.gx-player .gradient-blur > div:nth-of-type(8) {
+    z-index: 8;
+    backdrop-filter: blur(128px);
+    -webkit-backdrop-filter: blur(128px);
+    mask: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 77%, rgba(0, 0, 0, 1) 85%);
+    -webkit-mask: radial-gradient(circle, rgba(0, 0, 0, 0) 77%, rgba(0, 0, 0, 1) 85%);
+}
+
+
+/* ── About bar → artist panel ───────────────────────────────── */
+/* Closed: a bar across the bottom of the left column. Open: the
+   whole card, grown from that bar (anchored bottom-left). */
+.gx-player .modal {
+    position: absolute;
+    z-index: 99;
+    left: var(--pad);
+    bottom: var(--pad);
+    width: calc((100cqw - 2 * var(--pad) - var(--gap)) * 0.4);
+    height: 56px;
+    border-radius: 28px;
+    background: var(--p-modal);
+    overflow: hidden;
+    transform: translateZ(0);
+    will-change: width, height;
+    transition: 0.6s var(--p-ease);
+}
+
+.gx-player .modal.active {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius) - 2px);
+    transition: 1s var(--p-ease);
+}
+
+/* One button: the whole bar when closed, a round close when open */
+.gx-player .toggle {
+    position: absolute;
+    z-index: 5;
+    top: 8px;
+    right: 8px;
+    width: calc(100% - 16px);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: transparent;
+    color: var(--p-text);
+    cursor: pointer;
+    transition: width 0.6s var(--p-ease), top 0.6s var(--p-ease), right 0.6s var(--p-ease);
+}
+
+.gx-player .modal.active .toggle {
+    top: var(--pad);
+    right: var(--pad);
+    width: 40px;
+    transition: width 1s var(--p-ease), top 1s var(--p-ease), right 1s var(--p-ease);
+}
+
+.gx-player .toggle-label {
+    /* Out of flow, so the button can shrink to just its icon */
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--p-text);
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.gx-player .modal.active .toggle-label { opacity: 0; }
+
+.gx-player .toggle-icon,
+.gx-player .close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--p-control);
+    color: var(--p-text);
+    transition: background 0.2s ease;
+}
+
+.gx-player .toggle:hover .toggle-icon,
+.gx-player .close:hover { background: var(--p-control-hover); }
+
+.gx-player .toggle svg {
+    transform: rotateZ(0deg);
+    transition: transform 1s cubic-bezier(0.32, 1.35, 0.75, 1);
+}
+.gx-player .modal.active .toggle svg { transform: rotateZ(135deg); }
+
+/* Panel contents: laid out at full card size from the start and
+   revealed as the bar grows, mirroring the main view's columns */
+.gx-player .modal-content {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100cqw;
+    height: 100cqh;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    column-gap: var(--gap);
+    align-items: start;
+    align-content: start;
+    padding: var(--pad);
+    overflow: auto;
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: bottom left;
+    transition: opacity 0.2s ease, transform 0.6s var(--p-ease);
+}
+
+.gx-player .modal.active .modal-content {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.4s ease 0.15s, transform 1s var(--p-ease);
+}
+
+.gx-player .info {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+    /* clear the close button in the top-right corner */
+    padding-right: 56px;
+}
+
+.gx-player .bio {
+    max-width: 52ch;
+    color: var(--p-text);
+}
+
+.gx-player .shade {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    opacity: 1;
+    background: var(--p-modal);
+    pointer-events: none;
+    transition: 0.2s linear 0.2s opacity, 0.2s background;
+}
+
+.gx-player .modal:hover .shade { background: var(--p-modal-hover); }
+
+.gx-player .content.active .shade {
+    opacity: 0;
+    transition: 0.2s all;
+}
+
+/* ── Song modal ─────────────────────────────────────────────── */
+/* Starts exactly over the clicked row (top/left/width set inline),
+   then rises by --rise and grows to fill the card. */
+.gx-player .song-modal {
+    position: absolute;
+    z-index: 99;
+    left: var(--from-left, 0);
+    width: var(--from-width, 100%);
+    height: var(--row-h);
+    display: flex;
+    flex-direction: column;
+    /* Height the embed may use: what the header and footer leave */
+    --avail-h: calc(100cqh - var(--head-h) - var(--foot-h) - 2 * var(--pad));
+    /* Width of a 16:9 embed; the footer shares it so their edges align */
+    --stage-w: min(100cqw - 2 * var(--pad), var(--avail-h) * 16 / 9);
+    border-radius: 14px;
+    background: var(--p-modal);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateZ(0);
+    will-change: width, height;
+    transition: all 0.4s var(--p-ease), top 0s, opacity 0.2s 0.4s;
+}
+
+.gx-player .song-modal.active {
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius) - 2px);
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(var(--rise));
+    transition: all 0.6s var(--p-ease), top 0s, opacity 0s;
+}
+
+/* The row itself, growing into the header: same grid as a row */
+.gx-player .song-head {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) 40px;
+    column-gap: 12px;
+    align-items: center;
+    min-height: var(--row-h);
+    padding: 0 12px;
+    border-bottom: 1px solid transparent;
+    transition: all 0.4s var(--p-ease);
+}
+
+.gx-player .song-modal.active .song-head {
+    min-height: var(--head-h);
+    padding: 0 var(--pad);
+    border-bottom-color: var(--p-line);
+    transition: all 0.6s var(--p-ease);
+}
+
+.gx-player .song-head .name {
+    color: var(--p-text);
+    transform-origin: center left;
+    transition: transform 0.4s var(--p-ease);
+}
+
+/* Grows to display size; capped so the scaled text still fits */
+.gx-player .song-modal.active .song-head .name {
+    max-width: calc(100% / 1.6);
+    letter-spacing: -0.02em;
+    transform: scale(1.6);
+    transition: transform 0.6s var(--p-ease);
+}
+
+.gx-player .close {
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.gx-player .song-modal.active .close {
+    opacity: 1;
+    transition: opacity 0.3s ease 0.2s, background 0.2s ease;
+}
+
+/* The "+" spins into a close "×" */
+.gx-player .close svg {
+    transform: rotateZ(0deg);
+    transition: transform 1.2s cubic-bezier(0.32, 1.35, 0.75, 1);
+}
+.gx-player .song-modal.active .close svg { transform: rotateZ(-495deg); }
+
+/* The embed is sized from the card (cq units resolve against
+   .content): as large as fits beside the header and footer. The
+   auto margins centre embed + footer as one group below the
+   header, so the controls always sit right under the video. */
+.gx-player .song-body {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    display: grid;
+    place-items: center;
+    margin: auto var(--pad) 0;
+    padding-top: var(--pad);
+}
+
+.gx-player .song-foot { margin-bottom: auto; }
+
+.gx-player .frame-box {
+    position: relative;
+    width: var(--stage-w);
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.gx-player .frame-box--short {
+    width: min(100cqw - 2 * var(--pad), var(--avail-h) * 9 / 16);
+    aspect-ratio: 9 / 16;
+}
+
+.gx-player .frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.gx-player .song-foot {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--pad);
+    width: var(--stage-w);
+    margin-inline: auto;
+    padding: 16px 0 var(--pad);
+}
+
+.gx-player .volume {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.gx-player .song-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.gx-player .permalink {
+    color: var(--p-text);
+    text-decoration: underline;
+    text-decoration-color: var(--p-line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: text-decoration-color 0.2s ease;
+}
+
+.gx-player .permalink:hover { text-decoration-color: currentColor; }
+
+/* ── Phones: small cover beside the title ───────────────────── */
+@media (max-width: 767px) {
+    .gx-player {
+        --pad: 16px;
+        --gap: 16px;
+        --row-h: 48px;
+        --radius: 28px;
+        --radius-art: 14px;
+        --t-display: 22px;
+        --head-h: 72px;
+        --foot-h: 140px;
+    }
+
+    .gx-player .content { height: clamp(480px, 80svh, 720px); }
+
+    .gx-player .main-content,
+    .gx-player .modal-content {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: var(--gap);
+    }
+
+    /* Leave room under the list for the about bar, and fade the
+       list out beneath it so rows never read through the bar */
+    .gx-player .main-content {
+        padding-bottom: calc(var(--pad) * 2 + 52px);
+        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 128px), transparent calc(100% - 68px));
+        mask-image: linear-gradient(to bottom, #000 calc(100% - 128px), transparent calc(100% - 68px));
+    }
+
+    .gx-player .now {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .gx-player .main-content > .now { position: relative; }
+
+    .gx-player .photo-wrapper { width: 72px; }
+
+    .gx-player .photo--glow { filter: blur(20px) saturate(1.2); }
+
+    .gx-player .modal {
+        width: calc(100% - 2 * var(--pad));
+        height: 52px;
+        border-radius: 26px;
+    }
+
+    .gx-player .toggle {
+        top: 6px;
+        right: 6px;
+        width: calc(100% - 12px);
+    }
+
+    /* The panel's close button sits beside the artist name */
+    .gx-player .modal-content .now-text { padding-right: 56px; }
+    .gx-player .info { padding-right: 0; }
+
+    .gx-player .song-modal.active .song-head .name {
+        max-width: calc(100% / 1.45);
+        transform: scale(1.45);
+    }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .gx-player *,
+    .gx-player .content,
+    .gx-player .main-content,
+    .gx-player .modal,
+    .gx-player .song-modal {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+    }
+}

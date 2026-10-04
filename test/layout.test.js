@@ -4,33 +4,22 @@
 
    Exists because of a shipped bug: the hero was min-height:100svh,
    which put the release list at exactly the fold. Every embed
-   rendered correctly and accordion.test.js passed clean — the
-   page simply looked empty, because jsdom does no layout and so
-   can never catch "correct but off-screen".
+   rendered correctly and the DOM tests passed clean — the page
+   simply looked empty, because jsdom does no layout and so can
+   never catch "correct but off-screen".
 
-   The load-bearing assertion is therefore that the first embed is
-   actually ON SCREEN at rest, on every viewport worth caring about.
-
-   Serves the repo itself on an ephemeral port, so no external
-   server is needed:
+   The load-bearing assertion is therefore that the release list
+   is actually ON SCREEN at rest, on every viewport worth caring
+   about: the player's artwork and its whole first row.
 
        npm run setup      # once: deps + chromium
-       node layout.test.js                    # local files
+       (cd .. && npm run build)               # produce dist/
+       node layout.test.js                    # local build
        node layout.test.js https://gxmbymusic.uk/   # production
    ============================================================ */
 
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
 const { chromium } = require('playwright');
-
-const ROOT = path.join(__dirname, '..');
-
-const TYPES = {
-    '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
-    '.mp3': 'audio/mpeg', '.json': 'application/json', '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf', '.otf': 'font/otf', '.png': 'image/png', '.jpg': 'image/jpeg',
-};
+const { target } = require('./serve');
 
 const VIEWPORTS = [
     { name: 'iPhone SE',     width: 375,  height: 667 },
@@ -41,27 +30,8 @@ const VIEWPORTS = [
     { name: 'Short laptop',  width: 1366, height: 640 },
 ];
 
-// At least this much of the first embed must be on screen without scrolling.
-const MIN_VISIBLE_PCT = 60;
-
-function serve() {
-    const server = http.createServer((req, res) => {
-        const rel = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html';
-        const file = path.join(ROOT, rel);
-        if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
-            res.writeHead(404).end('not found');
-            return;
-        }
-        res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
-        fs.createReadStream(file).pipe(res);
-    });
-    return new Promise(resolve => server.listen(0, '127.0.0.1', () => resolve(server)));
-}
-
 (async () => {
-    const override = process.argv[2];
-    const server = override ? null : await serve();
-    const base = override || `http://127.0.0.1:${server.address().port}/index.html`;
+    const { base, close } = await target(process.argv[2]);
     console.log(`testing ${base}\n`);
 
     const browser = await chromium.launch();
@@ -79,37 +49,36 @@ function serve() {
         await page.waitForTimeout(1800);
 
         const m = await page.evaluate(() => {
-            const box = (el) => el.getBoundingClientRect();
-            const row = document.querySelector('.media-row');
-            const b = box(row.querySelector('.media-frame-box'));
+            const box = sel => document.querySelector(sel).getBoundingClientRect();
+            const art = box('.gx-player .photo-wrapper');
+            const row = box('.gx-player .songs .song');
             return {
-                rows: document.querySelectorAll('.media-row').length,
+                rows: document.querySelectorAll('.gx-player .songs .song').length,
                 iframes: document.querySelectorAll('iframe').length,
-                heading: Math.round(box(document.querySelector('.releases-heading')).top),
-                trigger: Math.round(box(row.querySelector('.media-trigger')).top),
-                top: Math.round(b.top),
-                bottom: Math.round(b.bottom),
+                heading: Math.round(box('.releases-heading').top),
+                artTop: Math.round(art.top),
+                rowTop: Math.round(row.top),
+                rowBottom: Math.round(row.bottom),
+                hscroll: document.documentElement.scrollWidth > window.innerWidth,
                 vh: window.innerHeight,
             };
         });
 
-        const visible = Math.max(0, Math.min(m.bottom, m.vh) - Math.max(m.top, 0));
-        const pct = Math.round((visible / (m.bottom - m.top)) * 100);
-
         const problems = [];
         if (m.rows !== 12) problems.push(`${m.rows} rows`);
-        if (m.iframes !== 1) problems.push(`${m.iframes} iframes eagerly mounted`);
+        if (m.iframes !== 0) problems.push(`${m.iframes} iframes eagerly mounted`);
         if (m.heading >= m.vh) problems.push('heading below fold');
-        if (m.trigger >= m.vh) problems.push('row 1 below fold');
-        if (pct < MIN_VISIBLE_PCT) problems.push(`embed only ${pct}% visible`);
+        if (m.artTop >= m.vh) problems.push('artwork below fold');
+        if (m.rowBottom > m.vh) problems.push(`row 1 not fully visible (bottom ${m.rowBottom})`);
+        if (m.hscroll) problems.push('horizontal scroll');
         if (errs.length) problems.push(`js errors: ${errs.join('; ')}`);
 
         if (problems.length) fails++;
         console.log(
             `${problems.length ? 'FAIL' : 'ok  '}  ${vp.name.padEnd(15)}` +
             `${String(vp.width).padStart(4)}x${String(vp.height).padEnd(5)}` +
-            ` heading@${String(m.heading).padStart(4)} row1@${String(m.trigger).padStart(4)}` +
-            ` embed ${String(pct).padStart(3)}% visible` +
+            ` heading@${String(m.heading).padStart(4)} art@${String(m.artTop).padStart(4)}` +
+            ` row1 ${String(m.rowTop).padStart(4)}–${String(m.rowBottom).padEnd(4)}` +
             (problems.length ? `  <- ${problems.join(', ')}` : '')
         );
 
@@ -117,10 +86,10 @@ function serve() {
     }
 
     await browser.close();
-    if (server) server.close();
+    close();
 
     console.log(fails
         ? `\n${fails} viewport(s) failed`
-        : '\nFirst embed is above the fold on every viewport');
+        : '\nArtwork and first release are above the fold on every viewport');
     process.exit(fails ? 1 : 0);
 })();

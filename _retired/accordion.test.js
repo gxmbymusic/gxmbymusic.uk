@@ -26,7 +26,7 @@ const { window } = dom;
 window.Element.prototype.scrollIntoView = function () {};
 
 // media.js only — engine.js/particles.js need a real canvas context
-window.eval(fs.readFileSync(path.join(ROOT, 'media.js'), 'utf8'));
+window.eval(fs.readFileSync(path.join(ROOT, 'public', 'media.js'), 'utf8'));
 
 const doc = window.document;
 let fails = 0;
