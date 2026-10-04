@@ -58,12 +58,15 @@
 /* `hidden` must beat the layout `display` on .media-panel */
 [hidden] { display: none !important; }
 
+/* Dark: every component palette in react-bits/ is near-white ink. */
 :root {
-    --bg: #ffffff;
-    --fg: #000000;
-    --fg-muted: rgba(0, 0, 0, 0.5);
-    --rule: rgba(0, 0, 0, 0.14);
+    --bg: #0b0a0f;
+    --fg: #f8fafc;
+    --fg-muted: rgba(248, 250, 252, 0.55);
+    --rule: rgba(255, 255, 255, 0.14);
+    --plate: rgba(18, 15, 23, 0.62);
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    color-scheme: dark;
 }
 
 html {
@@ -78,19 +81,20 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Canvases ───────────────────────────────────────────────── */
-/* Fixed ambient layers behind all content, across the whole scroll. */
-#particleCanvas,
+/* ── Ambient layers ─────────────────────────────────────────── */
+/* Fixed behind all content, across the whole scroll. #bg is the
+   MoltenMetal island; it takes the pointer only where nothing
+   sits above it. */
+#bg,
 #ghostCanvas {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
 }
 
-#particleCanvas { z-index: 1; }
-#ghostCanvas    { z-index: 2; }
+#bg          { z-index: 0; }
+#ghostCanvas { z-index: 2; pointer-events: none; }
 
 /* ── Hero ───────────────────────────────────────────────────── */
 /* Deliberately NOT 100svh. A full-height hero puts the release list
@@ -135,8 +139,8 @@ h1#mainText {
     margin: 0 auto;
     padding-bottom: 4rem;
 
-    /* Legible plate over the particle field */
-    background: rgba(255, 255, 255, 0.86);
+    /* Legible plate over the background */
+    background: var(--plate);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
 }

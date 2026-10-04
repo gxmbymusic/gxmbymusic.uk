@@ -257,8 +257,13 @@
   }
 
   // ── Unified rAF loop ──────────────────────────────────────
+  // Last frame's levels, for consumers outside this loop (the
+  // MoltenMetal background reads them from its own rAF).
+  let lastLevel = { energy: 0, transient: 0, peak: 0 };
+
   function tick() {
     const { energy, transient, peak } = readAudio();
+    lastLevel = { energy, transient, peak };
 
     // Spawn echo on strong transients (beat detection)
     transientBudget = Math.max(0, transientBudget - 0.025);
@@ -279,8 +284,9 @@
     requestAnimationFrame(tick);
   }
 
-  // ── Public API (used by media.js) ────────────────────────
-  window.GXMBYEngine = { setPlayback };
+  // ── Public API ───────────────────────────────────────────
+  // setPlayback: media.js. level: React islands (src/islands.jsx).
+  window.GXMBYEngine = { setPlayback, level: () => lastLevel };
 
   // ── Kick off ─────────────────────────────────────────────
   tick();

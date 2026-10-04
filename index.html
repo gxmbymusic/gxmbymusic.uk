@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#0b0a0f" />
 
         <!-- OG / Social -->
         <meta property="og:title" content="GXMBY" />
@@ -20,8 +20,8 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <!-- Particle field -->
-        <canvas id="particleCanvas"></canvas>
+        <!-- Background: MoltenMetal island (audio-reactive WebGL) -->
+        <div id="bg" aria-hidden="true"></div>
 
         <!-- Ghost text canvas (audio-reactive expanding rings) -->
         <canvas id="ghostCanvas"></canvas>
@@ -81,7 +81,6 @@
         ></audio>
 
         <!-- Classic scripts, served as-is from public/ -->
-        <script src="/particles.js"></script>
         <script src="/engine.js"></script>
         <script src="/media.js"></script>
 
