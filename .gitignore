@@ -67,3 +67,20 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# --- secrets and local databases (_ceo PROTOCOL §9, added 2026-10-13) ---
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
