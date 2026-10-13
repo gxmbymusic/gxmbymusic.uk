@@ -2,7 +2,7 @@
   "name": "gxmbymusic-tests",
   "private": true,
   "version": "1.0.0",
-  "description": "Regression tests for gxmbymusic.uk (catalogue, player, layout)",
+  "description": "Regression tests for gxmby.co.uk (catalogue, player, layout)",
   "scripts": {
     "test": "node catalogue.test.mjs && node player.test.js && node layout.test.js",
     "test:catalogue": "node catalogue.test.mjs",

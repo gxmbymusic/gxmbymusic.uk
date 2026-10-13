@@ -15,7 +15,7 @@
        npm run setup      # once: deps + chromium
        (cd .. && npm run build)               # produce dist/
        node layout.test.js                    # local build
-       node layout.test.js https://gxmbymusic.uk/   # production
+       node layout.test.js https://gxmby.co.uk/   # production
    ============================================================ */
 
 const { chromium } = require('playwright');

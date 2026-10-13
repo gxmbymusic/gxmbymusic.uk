@@ -2,7 +2,7 @@
   "name": "gxmbymusic",
   "private": true,
   "version": "1.0.0",
-  "description": "gxmbymusic.uk — static page built by Vite, with React islands for the visual components",
+  "description": "gxmby.co.uk — static page built by Vite, with React islands for the visual components",
   "type": "commonjs",
   "scripts": {
     "dev": "vite",

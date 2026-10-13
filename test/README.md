@@ -29,7 +29,7 @@ so they need no running server — but they do need a fresh `npm run build`, or
 they test stale output. Point them at a deployment instead by passing a URL:
 
 ```sh
-node layout.test.js https://gxmbymusic.uk/
+node layout.test.js https://gxmby.co.uk/
 ```
 
 ## Not covered automatically
